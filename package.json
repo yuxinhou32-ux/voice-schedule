@@ -1,0 +1,17 @@
+{
+  "name": "voice-schedule",
+  "version": "1.0.0",
+  "private": true,
+  "description": "语音优先的日程应用 —— 说一句话，日程就排好了",
+  "keywords": ["pwa", "calendar", "voice", "scheduling"],
+  "license": "UNLICENSED",
+  "scripts": {
+    "test": "node tests/parse.js && node tests/acceptance.js && node tests/sync.js",
+    "test:parse": "node tests/parse.js",
+    "test:acceptance": "node tests/acceptance.js",
+    "test:sync": "node tests/sync.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.0"
+  }
+}
