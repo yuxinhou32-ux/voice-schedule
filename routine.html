@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<title>写入固定作息</title>
+<style>
+  :root{ --bg:#F6F6F8; --card:#fff; --ink:#18191C; --ink2:#6B7280; --ink3:#9CA1AB;
+         --line:#EDEDF0; --accent:#5046E5; --safe-b:env(safe-area-inset-bottom,0px); }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:-apple-system,"PingFang SC","Noto Sans SC",Inter,sans-serif;
+       padding:24px 20px calc(28px + var(--safe-b));}
+  h1{font-size:20px;margin:0 0 6px;}
+  .sub{font-size:13px;color:var(--ink2);line-height:1.6;margin:0 0 18px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;}
+  .row{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+  .row:last-child{border-bottom:0;}
+  .t{width:92px;flex:none;color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;}
+  .n{flex:1;line-height:1.45;}
+  .tag{font-size:10.5px;padding:2px 7px;border-radius:9px;flex:none;}
+  .nd{color:var(--ink3);font-size:11px;}
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:15px;font-weight:600;
+       font-family:inherit;background:var(--accent);color:#fff;margin-top:6px;}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);}
+  .ok{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;border-radius:14px;padding:14px;font-size:14px;line-height:1.55;margin-bottom:14px;}
+  .hint{font-size:12px;color:var(--ink3);line-height:1.6;margin-top:14px;}
+</style>
+</head>
+<body>
+<h1>固定作息 · 一键写入</h1>
+<p class="sub">下面 14 条会<b>追加</b>到 App 里（不会覆盖你已有的日程）。已存在的同 id 条目会自动替换，重复点也不会堆积。</p>
+<div id="msg"></div>
+<div class="card" id="list"></div>
+<button class="btn" id="goBtn">打开应用</button>
+<button class="btn ghost" id="againBtn">再写一次（覆盖同 id）</button>
+<p class="hint">写入后：起床 / 吃饭 / 睡觉是<b>时间节点</b>（圆点显示、不计入统计）；训练和投递是时间块，参与每周统计。需要 iOS 到点提醒的话，进 App「我的 → 同步到苹果日历」导出 .ics，循环规则会一起带过去。</p>
+
+<script>
+var TAGS = { work:{n:'工作',c:'#5046E5',bg:'#EEEDFD'}, fun:{n:'玩乐',c:'#10B981',bg:'#E7F8F1'},
+             personal:{n:'个人',c:'#F59E0B',bg:'#FEF4E4'}, study:{n:'学习',c:'#0284C7',bg:'#E5F3FC'} };
+
+/* 循环规则：daily / weekly(rdays) / monthly(rmd)；node=true 表示时间节点 */
+var RT = [
+  { id:'rt01', title:'起床 · 早餐',           sh:'08:00', eh:'08:15', recur:{type:'daily'}, tag:'personal', node:true,  remind:0,  loc:'' },
+  { id:'rt02', title:'午餐',                  sh:'12:00', eh:'12:15', recur:{type:'daily'}, tag:'personal', node:true,  remind:0,  loc:'' },
+  { id:'rt03', title:'晚餐',                  sh:'18:00', eh:'18:15', recur:{type:'daily'}, tag:'personal', node:true,  remind:0,  loc:'' },
+  { id:'rt04', title:'睡觉',                  sh:'22:30', eh:'22:45', recur:{type:'daily'}, tag:'personal', node:true,  remind:15, loc:'14:00 后不再摄入咖啡因' },
+  { id:'rt05', title:'冥想',                  sh:'13:15', eh:'13:30', recur:{type:'daily'}, tag:'personal', node:false, remind:0,  loc:'' },
+  { id:'rt06', title:'午休',                  sh:'13:30', eh:'14:00', recur:{type:'daily'}, tag:'personal', node:false, remind:0,  loc:'定闹钟，别超过 30 分钟' },
+
+  { id:'rt07', title:'投简历',                sh:'09:00', eh:'10:00', recur:{type:'weekly', rdays:[1,2,4,6]}, tag:'work', node:false, remind:0, loc:'' },
+  { id:'rt08', title:'投简历',                sh:'14:00', eh:'16:00', recur:{type:'weekly', rdays:[1,2,4,6]}, tag:'work', node:false, remind:0, loc:'' },
+  { id:'rt09', title:'投简历',                sh:'09:00', eh:'12:00', recur:{type:'weekly', rdays:[3,5]},     tag:'work', node:false, remind:0, loc:'' },
+  { id:'rt10', title:'投简历',                sh:'09:00', eh:'11:30', recur:{type:'weekly', rdays:[0]},       tag:'work', node:false, remind:0, loc:'' },
+
+  { id:'rt11', title:'训练 · 深蹲日｜深蹲 + 臀腿孤立', sh:'10:00', eh:'11:30', recur:{type:'weekly', rdays:[1]}, tag:'fun', node:false, remind:15, loc:'腰部不适或经期降重量，别硬撑' },
+  { id:'rt12', title:'训练 · 卧推日｜卧推 + 胸肩',     sh:'10:00', eh:'11:30', recur:{type:'weekly', rdays:[2]}, tag:'fun', node:false, remind:15, loc:'腰部不适或经期降重量，别硬撑' },
+  { id:'rt13', title:'训练 · 硬拉日｜硬拉 + 背',       sh:'10:00', eh:'11:30', recur:{type:'weekly', rdays:[4]}, tag:'fun', node:false, remind:15, loc:'腰部不适或经期降重量，别硬撑' },
+  { id:'rt14', title:'训练 · 上肢日｜肩 + 背 + 手臂',  sh:'10:00', eh:'11:30', recur:{type:'weekly', rdays:[6]}, tag:'fun', node:false, remind:15, loc:'腰部不适或经期降重量，别硬撑' }
+];
+
+var WEEK_S = ['日','一','二','三','四','五','六'];
+function pad(n){ return String(n).padStart(2,'0'); }
+function today(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function rtext(r){
+  if (r.type==='daily') return '每天';
+  if (r.type==='weekly') return '每周' + r.rdays.slice().sort(function(a,b){return a-b;}).map(function(x){return WEEK_S[x];}).join(' ');
+  if (r.type==='monthly') return '每月'+r.rmd+'号';
+  return '';
+}
+function build(){
+  var d = today();
+  return RT.map(function(x){
+    return { id:x.id, title:x.title, start:d+'T'+x.sh, end:d+'T'+x.eh,
+             allDay:false, location:x.loc||'', remind:x.remind||0, tag:x.tag,
+             node:!!x.node, recur:x.recur, exdates:[], overrides:{}, u:Date.now() };
+  });
+}
+function write(){
+  var list = build();
+  var ids = {}; list.forEach(function(x){ ids[x.id]=1; });
+  var exist = [];
+  try{ exist = JSON.parse(localStorage.getItem('voical-events')||'[]'); }catch(e){ exist = []; }
+  var kept = exist.filter(function(x){ return !ids[x.id]; });
+  localStorage.setItem('voical-events', JSON.stringify(kept.concat(list)));
+  /* 打同步标记：否则这些条目有 u 却不在推送队列里，永远不会上云 */
+  try{
+    var pref = JSON.parse(localStorage.getItem('voical-pref')||'{}');
+    pref.dirty = pref.dirty || {};
+    list.forEach(function(x){ pref.dirty[x.id] = x.u; });
+    localStorage.setItem('voical-pref', JSON.stringify(pref));
+  }catch(e){}
+  return { added: list.length, kept: kept.length };
+}
+function renderList(){
+  var box = document.getElementById('list');
+  box.innerHTML = RT.map(function(x){
+    var t = TAGS[x.tag] || TAGS.personal;
+    return '<div class="row"><span class="t">'+x.sh+'</span>'
+      + '<span class="n">'+x.title+(x.node?' <span class="nd">· 节点</span>':'')+'<br>'
+      + '<span class="nd">'+rtext(x.recur)+'</span></span>'
+      + '<span class="tag" style="background:'+t.bg+';color:'+t.c+'">'+t.n+'</span></div>';
+  }).join('');
+}
+function go(){
+  location.href = 'index.html';
+}
+document.getElementById('goBtn').onclick = go;
+document.getElementById('againBtn').onclick = function(){
+  var r = write();
+  document.getElementById('msg').innerHTML = '<div class="ok">已写入 <b>'+r.added+'</b> 条作息，原有日程保留 '+r.kept+' 条。</div>';
+};
+
+renderList();
+var r = write();
+document.getElementById('msg').innerHTML = '<div class="ok">已写入 <b>'+r.added+'</b> 条作息，原有日程保留 '+r.kept+' 条。</div>';
+setTimeout(go, 2500);
+</script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>口述日程 · 说明书</title>
+<meta name="theme-color" content="#F9F9FB">
+<style>
+  :root{ --accent:#534AB7; --ink:#2C2C2A; --ink2:#5F5E5A; --ink3:#9CA1AB; --line:#E7E7EA; --card:#FFFFFF; --bg:#F9F9FB; }
+  *{ box-sizing:border-box; -webkit-text-size-adjust:100%; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif; line-height:1.7; font-size:15px; }
+  .wrap{ max-width:640px; margin:0 auto; padding:28px 20px 64px; }
+  header{ text-align:center; padding:18px 0 26px; }
+  .logo{ width:64px; height:64px; border-radius:16px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:26px; font-weight:600; }
+  h1{ font-size:22px; margin:0 0 6px; font-weight:600; }
+  .sub{ color:var(--ink2); font-size:14px; margin:0; }
+  a.link{ color:var(--accent); word-break:break-all; }
+  .cta{ display:block; text-align:center; background:var(--accent); color:#fff; text-decoration:none; padding:14px 0; border-radius:12px; margin:18px 0 6px; font-weight:500; }
+  .cta:active{ opacity:.85; }
+  .tip{ font-size:13px; color:var(--ink3); text-align:center; margin:0 0 10px; }
+  section{ background:var(--card); border-radius:14px; padding:18px 18px 20px; margin:14px 0; }
+  h2{ font-size:17px; margin:0 0 12px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  h2 .n{ width:24px; height:24px; border-radius:8px; background:#EEEDFE; color:var(--accent); font-size:13px; display:flex; align-items:center; justify-content:center; flex:none; }
+  h3{ font-size:15px; margin:16px 0 6px; font-weight:600; }
+  p{ margin:8px 0; }
+  ol,ul{ margin:8px 0; padding-left:22px; }
+  li{ margin:5px 0; }
+  .steps{ counter-reset:s; list-style:none; padding:0; margin:10px 0 0; }
+  .steps li{ position:relative; padding-left:32px; margin:12px 0; }
+  .steps li::before{ counter-increment:s; content:counter(s); position:absolute; left:0; top:2px; width:22px; height:22px; border-radius:11px; background:#EEEDFE; color:var(--accent); font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:center; }
+  table{ width:100%; border-collapse:collapse; margin:10px 0 4px; font-size:14px; }
+  th,td{ text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ color:var(--ink2); font-weight:500; font-size:13px; }
+  td.k{ color:var(--accent); white-space:nowrap; font-weight:500; }
+  code{ background:#F1F0FD; color:var(--accent); padding:1px 6px; border-radius:5px; font-size:13px; }
+  .say{ background:#F7F7F9; border-radius:10px; padding:10px 12px; margin:8px 0; font-size:14px; color:var(--ink2); }
+  .say b{ color:var(--ink); font-weight:500; }
+  .warn{ background:#FAEEDA; border-radius:10px; padding:10px 12px; margin:12px 0 0; font-size:14px; color:#633806; }
+  .note{ background:#EEEDFE; border-radius:10px; padding:10px 12px; margin:12px 0 0; font-size:14px; color:#3C3489; }
+  .qa{ margin:14px 0 0; }
+  .qa .q{ font-weight:600; margin:10px 0 2px; }
+  .qa .a{ color:var(--ink2); margin:0 0 8px; font-size:14px; }
+  footer{ text-align:center; color:var(--ink3); font-size:13px; padding:24px 0 0; }
+  .tag{ display:inline-block; background:#F1F0FD; color:var(--accent); border-radius:6px; padding:1px 8px; font-size:12px; margin-right:6px; }
+  /* 新增：功能总览卡片 */
+  .feats{ display:flex; flex-direction:column; gap:10px; margin:12px 0 0; }
+  .feat{ display:flex; gap:12px; align-items:flex-start; background:#FAFAFC; border-radius:12px; padding:12px 14px; }
+  .feat .ico{ width:34px; height:34px; border-radius:10px; background:#EEEDFE; color:var(--accent); display:flex; align-items:center; justify-content:center; flex:none; font-size:15px; font-weight:600; }
+  .feat .ft{ font-weight:600; margin:0 0 2px; font-size:14px; }
+  .feat .fd{ margin:0; color:var(--ink2); font-size:13.5px; line-height:1.6; }
+  .lead{ font-size:15px; color:var(--ink2); }
+  .lead b{ color:var(--ink); }
+  /* 新增：日志示例 */
+  .jcard{ background:#FAFAFC; border-left:3px solid var(--accent); border-radius:0 10px 10px 0; padding:12px 14px; margin:10px 0; }
+  .jmeta{ display:flex; gap:8px; align-items:center; margin-bottom:6px; font-size:12px; color:var(--ink3); }
+  .jkind{ background:#EAF3DE; color:#3B6D11; border-radius:6px; padding:1px 8px; font-size:12px; font-weight:500; }
+  .jtxt{ margin:0; font-size:14px; color:var(--ink); }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 2px; }
+  .chips span{ background:#F1F0FD; color:var(--accent); border-radius:999px; padding:3px 11px; font-size:12.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">口</div>
+    <h1>口述日程</h1>
+    <p class="sub">说一句话，日程自己填好 · 顺便把日子记下来</p>
+    <a class="cta" href="https://your-app.example.com/">打开应用</a>
+    <p class="tip">your-app.example.com　·　手机浏览器打开</p>
+  </header>
+
+  <section>
+    <h2><span class="n">1</span>它是什么</h2>
+    <p class="lead">一个装在手机里的<b>语音日程工具</b>。不用点开日历、不用一格一格填，对着手机说一句「明天下午三点半跟老张碰一下，大概一小时」，它自己把日期、时间、时长都填好，你确认一下就行。</p>
+    <p class="lead">除了日程，它还能当<b>随手记事本</b>用：想到什么说出来进「事项」，一天过完说一段进「日志」，训练、复盘、心情都能存，之后还能搜回来。</p>
+    <div class="feats">
+      <div class="feat">
+        <div class="ico">说</div>
+        <div><p class="ft">口述建日程</p><p class="fd">日期、时间、时长、地点、提醒、重复，说一句全填好。</p></div>
+      </div>
+      <div class="feat">
+        <div class="ico">记</div>
+        <div><p class="ft">日志 · 语音长录</p><p class="fd">说一大段也不会断，按天存档，打标签、能搜索。训练记录尤其好用。</p></div>
+      </div>
+      <div class="feat">
+        <div class="ico">办</div>
+        <div><p class="ft">事项与倒计时</p><p class="fd">「记得买牛奶」进待办；「10 月 8 日前交报告」自动变倒计时。</p></div>
+      </div>
+      <div class="feat">
+        <div class="ico">看</div>
+        <div><p class="ft">日 / 周 / 月 + 统计</p><p class="fd">三种视图随便看，每周时间花在哪了有图表。</p></div>
+      </div>
+      <div class="feat">
+        <div class="ico">云</div>
+        <div><p class="ft">云端同步</p><p class="fd">登录邮箱账号，换手机也能把数据拉回来。</p></div>
+      </div>
+      <div class="feat">
+        <div class="ico">铃</div>
+        <div><p class="ft">导出到苹果日历</p><p class="fd">导出 .ics 交给系统日历，到点由 iPhone 弹提醒。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>装到手机桌面（像 App 一样打开）</h2>
+    <p>iPhone 请用 <b>Safari</b> 打开上面的链接，然后：</p>
+    <ol class="steps">
+      <li>点底部中间的<b>分享</b>按钮（方框向上箭头）</li>
+      <li>往下滑，选<b>「添加到主屏幕」</b></li>
+      <li>右上角点<b>「添加」</b></li>
+    </ol>
+    <p>桌面上就会出现一个图标，以后点它直接全屏打开，和别的 App 没区别。安卓手机用 Chrome：右上角三个点 → <b>添加到主屏幕</b>。</p>
+    <div class="note">第一次点麦克风时，浏览器会问「是否允许使用麦克风」，选<b>允许</b>。不点允许就说不了话。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>功能一览（这张表可以先扫一眼）</h2>
+    <table>
+      <tr><th>想做的事</th><th>怎么做</th></tr>
+      <tr><td class="k">建日程</td><td>右下角紫色麦克风 → 说一句 → 确认卡改一改 → 加入</td></tr>
+      <tr><td class="k">记待办</td><td>切到「事项」页 → 说「记得买牛奶」</td></tr>
+      <tr><td class="k">设截止日</td><td>「事项」页说「10 月 8 日前交报告」→ 自动倒计时</td></tr>
+      <tr><td class="k">写日志</td><td>日程页右上角<b>「日志」</b> → 麦克风长录，说一段</td></tr>
+      <tr><td class="k">找记录</td><td>日志页右上角<b>放大镜</b> → 搜关键词</td></tr>
+      <tr><td class="k">看时间分布</td><td>底部「统计」页</td></tr>
+      <tr><td class="k">备份 / 换机</td><td>底部「我的」→ 云端同步 / 导出备份</td></tr>
+      <tr><td class="k">要响铃提醒</td><td>「我的」→ 导出 .ics → 加到苹果日历</td></tr>
+    </table>
+    <div class="note">底部四个页签：<b>日程 · 事项 · 统计 · 我的</b>。日志从日程页右上角进。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>口述建日程</h2>
+    <ol class="steps">
+      <li>点右下角<b>紫色麦克风</b></li>
+      <li>对着手机说一句话，比如「明天下午三点半跟老张碰一下，大概一小时」</li>
+      <li>说完停一下，会弹出一张确认卡 —— 日期、时间、时长都填好了，<b>不对可以直接改</b></li>
+      <li>点<b>「加入日程」</b>，搞定</li>
+    </ol>
+    <div class="note">识别不一定百分百准，所以特意留了这张确认卡。落库前看一眼，一键改。</div>
+
+    <h3>怎么说更好认</h3>
+    <table>
+      <tr><th>想表达</th><th>可以这么说</th></tr>
+      <tr><td class="k">时间</td><td>明天下午三点半 / 下周三上午十点 / 后天早上九点</td></tr>
+      <tr><td class="k">时长</td><td>大概一小时 / 一个半小时 / 40 分钟</td></tr>
+      <tr><td class="k">重复</td><td>每周一三五早上八点 / 每周三晚上七点半 / 每天早上七点 / 每月 3 号</td></tr>
+      <tr><td class="k">地点</td><td>在中环 A 座拜访客户（「在…」后面会被记成地点）</td></tr>
+      <tr><td class="k">提醒</td><td>提前半小时提醒我 / 提前 15 分钟</td></tr>
+      <tr><td class="k">截止</td><td>10 月 8 日前交报告（会变成倒计时事项）</td></tr>
+      <tr><td class="k">想法</td><td>记得买牛奶 / 有空找老王聊聊（会进「事项」）</td></tr>
+    </table>
+    <div class="say"><b>小技巧：</b>一次只说一件事，识别最准。说完停一秒再动，别边说边划走。</div>
+    <div class="say"><b>在哪说很重要：</b>在「日程」页说的都进日程（没说日期就算今天）；在「事项」页说的进待办或倒计时；在日志页说的一大段就存成日志。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>日志：一天过完，说一段就存下了</h2>
+    <p>这是很多人用得最多的功能。日程记「我要做什么」，日志记「我今天怎么样」——训练练了什么、身体什么感觉、今天想通的一件事，说一段就存下来，以后翻得到。</p>
+
+    <h3>在哪、怎么记</h3>
+    <ol class="steps">
+      <li>日程页<b>右上角「日志」</b>进去</li>
+      <li>点右下角麦克风 → 弹窗里选<b>「麦克风长录」</b></li>
+      <li><b>可以一直说</b>，中间停顿几秒也不会断（这条和日程不一样，就是给写日志用的）</li>
+      <li>说完点<b>「停止录音」</b>，文字落进框里，改一改错字</li>
+      <li>选好日期和分类，点<b>「保存」</b></li>
+    </ol>
+    <div class="note">不想说话也可以：点加号直接打字写。长录中途去忙别的，回来点停止，前面说的都还在。</div>
+
+    <h3>写出来长这样</h3>
+    <div class="jcard">
+      <div class="jmeta"><span class="jkind">训练</span><span>2026-09-22</span></div>
+      <p class="jtxt">卧推日。热身两组，正式四组 60kg×8，最后一组有点吃力但没掉。胸部发力感比上次好，左肩还是有点不稳，下次加一组肩袖激活。</p>
+    </div>
+    <p>这类记录的价值在于<b>能搜回来</b>。过一个月想知道自己卧推有没有进步，搜「卧推」，每次的记录按日期排在眼前。</p>
+
+    <h3>分类标签：自己需要什么就加什么</h3>
+    <p>日志页顶部有一排标签，点一下就<b>只看这一类</b>。默认有「日常」「训练」「其他」，也可以自己加，比如「读书」「复盘」「情绪」，加的时候挑颜色，之后一眼能认出来。</p>
+    <div class="chips"><span>全部</span><span>日常</span><span>训练</span><span>读书</span><span>只看这天</span></div>
+    <p>最右边那个<b>「只看这天」</b>很有用：关掉它看的是这类记录的全部历史，打开就只看当前这一天。</p>
+
+    <h3>找旧记录</h3>
+    <ul>
+      <li><b>按关键词</b>：右上角放大镜，搜「深蹲」「肩」「会议」，全部命中都列出来</li>
+      <li><b>按日子</b>：顶部日期条，<b>‹ ›</b> 翻前后天，或直接点日期挑，右边「今天」一键回到当天</li>
+      <li><b>按分类</b>：点顶部标签</li>
+    </ul>
+
+    <h3>几个合适的使用场景</h3>
+    <ul>
+      <li><b>训练日志</b>：每次练完说 30 秒，重量组数、身体感受、下次要改的地方。累积几个月就是自己的训练档案</li>
+      <li><b>每日复盘</b>：睡前说两分钟今天做了什么、卡在哪、明天怎么办</li>
+      <li><b>随手记</b>：见完客户、听完课，趁热说一段，比事后回忆靠谱</li>
+      <li><b>情绪 / 身体</b>：头有点痛、今天特别累——这类记下来，久了自己能看出规律</li>
+    </ul>
+    <div class="note">日志和日程一样存在本机，登录云端账号后<b>会一起同步</b>，换手机登录就回来了；也包含在「导出备份」里。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>事项与倒计时</h2>
+    <ul>
+      <li>切到底部<b>「事项」</b>页，点麦克风说「记得买牛奶」→ 进待办清单</li>
+      <li>说「10 月 8 日前交报告」→ 自动识别成<b>倒计时事项</b>，在月历对应日子显示「D-3」这样的提醒</li>
+      <li>办完点一下勾掉；页签上的小红点会告诉你还剩几件没办</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>界面：日 / 周 / 月三个看法</h2>
+    <p>顶部三个按钮切换：<span class="tag">日</span><span class="tag">周</span><span class="tag">月</span></p>
+    <ul>
+      <li><b>日视图</b>：一天的时间轴，07:00 起到 23:30</li>
+      <li><b>周视图</b>：整周排布，顶部一横排是日期，一眼看出这周是几号</li>
+      <li><b>月视图</b>：整月格子，每格左上角是日期，重要日程和倒计时会显示在格子里</li>
+      <li>三种视图都可以<b>左右滑动</b>日期条，快速看前后日子</li>
+    </ul>
+    <h3>怎么跳到某一天</h3>
+    <ul>
+      <li>标题两边的 <b>‹ ›</b> 箭头：日视图按天挪，周视图按周挪，月视图按月挪</li>
+      <li><b>点标题本身</b>：弹出滚轮，年 / 月 / 日 划一划，直接跳。想从 9 月 22 号跳到 10 月 8 号，两下就到</li>
+      <li>月视图里<b>点某个格子</b>：直接进那天的日视图</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">8</span>统计：时间到底花哪了</h2>
+    <p>底部「统计」页按<b>标签</b>（工作 / 学习 / 玩乐 / 个人，在确认卡上可以改）汇总每周时长，做成图表。想知道自己这周是不是全在开会，看一眼就清楚。</p>
+  </section>
+
+  <section>
+    <h2><span class="n">9</span>数据在哪、会不会丢</h2>
+    <ul>
+      <li>数据<b>默认只存在你这台手机上</b>（浏览器本地存储），没登录云端就不上传服务器</li>
+      <li>换手机、清浏览器数据、长时间不打开被系统清理 → <b>会丢</b></li>
+      <li>所以建议做两件事之一：
+        <br>① 去<b>「我的」→ 云端同步</b>登录邮箱账号，之后自动备份、换设备能拉回来
+        <br>② 或偶尔点<b>「导出备份」</b>，存一份 JSON 到文件 App / 发给自己</li>
+      <li>登录云端后，日程、事项、<b>日志和日志标签</b>都会一起同步</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">10</span>把日程放进手机自带的日历（会响铃提醒）</h2>
+    <p>这个应用本身不推送系统通知。想让 iPhone 到点弹提醒，就把它导进系统日历：</p>
+    <ol class="steps">
+      <li>在应用里点底部<b>「我的」</b></li>
+      <li>找到<b>「同步到苹果日历」</b>那块，先选一个提醒档位（不提醒 / 15 分 / 30 分 / 1 小时），没单独设提醒的条目就按这个档位给闹钟</li>
+      <li>点<b>「导出 .ics」</b></li>
+      <li>打开 <b>Safari 的下载列表</b>（地址栏右边的下载图标），点开刚下载的 .ics 文件</li>
+      <li>系统弹出「添加到日历」→ 建议<b>新建一个专用日历</b>，比如叫「口述日程」</li>
+      <li>点<b>「添加」</b>，完成。之后到点由 iOS 系统提醒你</li>
+    </ol>
+    <div class="warn"><b>注意重复：</b>日程有变动时，建议把上次导入的那个日历<b>整份删掉再重新导一遍</b>，否则新旧条目会堆在一起重复提醒。重复日程（比如每周一三五）会带上重复规则，一次导入就会自动铺开。</div>
+    <div class="note">安卓可以用「复制内容」把日程文本粘到别处，或同样用 .ics 文件导入 Google 日历。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">11</span>换设备 / 加到桌面后，条数对不上怎么办</h2>
+    <ul>
+      <li>iPhone 上「添加到主屏幕」之后，<b>桌面图标和 Safari 是两个独立的存储空间</b>，所以第一次打开会让你重新登录 —— 这是 iOS 的机制，不是坏了</li>
+      <li>登录后点<b>「立即同步」</b>，云端的数据就会拉到这个新入口</li>
+      <li>如果拉下来条数还是不对：回到<b>数据完整的那个入口</b>（通常是最早用的 Safari）→「我的」→<b>「全量上传」</b>，把本机整份数据推到云端，再回新入口同步一次</li>
+      <li>日常建议<b>只用其中一个入口</b>，别两边各记各的，免得来回合并</li>
+      <li>应用有新版本时，「我的」页顶部会出现一条<b>橙色提示</b>，告诉你怎么刷新拿到新版</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">12</span>常见问题</h2>
+    <div class="qa">
+      <p class="q">点了麦克风没反应？</p>
+      <p class="a">先看有没有允许麦克风权限；再确认用的是 Safari（iPhone）或 Chrome（安卓）。没有语音识别环境时，也可以在录音框里直接打字。</p>
+      <p class="q">说的时间不对怎么办？</p>
+      <p class="a">确认卡上日期、时间、时长都能改，改完再点加入。也可以先加入，之后点这条日程直接改。</p>
+      <p class="q">日志和日程有什么区别？</p>
+      <p class="a">日程是「要发生的事」，有具体时间点；日志是「已经发生的事」，按天写一段话，可以打标签、搜索。两个入口分开，互不干扰。</p>
+      <p class="q">日志能写多长？</p>
+      <p class="a">随便多长。用「麦克风长录」可以一直说，中间停顿也不会断；说完再手动改错字、分段。</p>
+      <p class="q">没说具体时间会怎样？</p>
+      <p class="a">会成为「事项」而不是日程，或者提示你补一个时间。想让它占一整天，把时长改成「全天」。</p>
+      <p class="q">为什么我看不到下个月的安排？</p>
+      <p class="a">月视图可以一直往后翻，跨月的日程和截止日期照样显示在对应格子里。</p>
+      <p class="q">统计页的数字是怎么来的？</p>
+      <p class="a">按你说话时自动判断的标签（工作 / 学习 / 玩乐 / 个人）汇总每周时长，标签在确认卡上可以改。</p>
+      <p class="q">会占很多手机空间吗？</p>
+      <p class="a">不会。纯文字数据，几千条记录也就几兆；应用本身是一个网页，不需要下载安装包。</p>
+    </div>
+  </section>
+
+  <footer>口述日程 · 用嘴记日子<br>有问题直接问我</footer>
+
+</div>
+</body>
+</html>
