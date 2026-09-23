@@ -4,13 +4,14 @@
   "private": true,
   "description": "语音优先的日程应用 —— 说一句话，日程就排好了",
   "keywords": ["pwa", "calendar", "voice", "scheduling"],
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
-    "test": "node tests/parse.js && node tests/acceptance.js && node tests/features.js && node tests/sync.js",
+    "test": "node tests/parse.js && node tests/acceptance.js && node tests/features.js && node tests/sync.js && node tests/demo.js",
     "test:parse": "node tests/parse.js",
     "test:acceptance": "node tests/acceptance.js",
     "test:features": "node tests/features.js",
-    "test:sync": "node tests/sync.js"
+    "test:sync": "node tests/sync.js",
+    "test:demo": "node tests/demo.js"
   },
   "devDependencies": {
     "jsdom": "^24.1.0"
