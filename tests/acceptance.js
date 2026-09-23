@@ -4,7 +4,7 @@ const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
 const D = path.join(__dirname, '..');
-const RAW = fs.readFileSync(path.join(D, 'index.html'), 'utf8');
+const RAW = fs.readFileSync(path.join(D, 'app.html'), 'utf8');
 const fc = fs.readFileSync(path.join(D, 'fullcalendar.min.js'), 'utf8');
 let parser = '';
 if (fs.existsSync(path.join(D, 'parser.js'))) parser = fs.readFileSync(path.join(D, 'parser.js'), 'utf8');

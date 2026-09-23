@@ -1,10 +1,10 @@
-/* 演示版专项测试：无云、有示例数据、零网络请求 */
+/* 演示版专项测试（index.html = 站点首页那份）：无云、有示例数据、零网络请求 */
 const fs = require('fs');
 const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
 const D = path.join(__dirname, '..');
-const RAW = fs.readFileSync(path.join(D, 'demo.html'), 'utf8');
+const RAW = fs.readFileSync(path.join(D, 'index.html'), 'utf8');
 const fc = fs.readFileSync(path.join(D, 'fullcalendar.min.js'), 'utf8');
 const parser = fs.readFileSync(path.join(D, 'parser.js'), 'utf8');
 

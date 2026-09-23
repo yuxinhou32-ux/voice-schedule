@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-把 index.html 构建成「无云演示版」 demo.html。
+把 app.html（带云同步的完整版）构建成「无云演示版」 index.html
+—— 产物同时就是 GitHub Pages 的站点首页，所以文件名必须叫 index.html。
 
 演示版与主应用的区别（全部为纯前端屏蔽，不依赖任何服务器）：
   1. 移除云 SDK 的 CDN 外链  → 页面不再下载任何第三方脚本
@@ -11,16 +12,17 @@
   5. 首次访问预置一批虚构示例日程
   6. 顶部加一条演示版提示
 
-每次主应用（index.html）发版后重新跑一次本脚本即可。
+每次主应用发版后重新跑一次本脚本即可。
+注意：主项目的 index.html 同步进本仓库时要改名成 app.html —— 站点首页必须留给无云演示版。
 """
 import re
 import os
 
-# 脚本所在目录即项目根目录（index.html / demo.html 同在此目录），
+# 脚本所在目录即项目根目录（app.html 是源、index.html 是产物，同在此目录），
 # 用相对路径，避免把本机绝对路径写进仓库。
 BASE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(BASE, 'index.html')
-DST = os.path.join(BASE, 'demo.html')
+SRC = os.path.join(BASE, 'app.html')
+DST = os.path.join(BASE, 'index.html')
 
 with open(SRC, 'r', encoding='utf-8') as f:
     s = f.read()
@@ -180,7 +182,7 @@ sub('版本号标注 demo',
     "const APP_VER = '2026-09-23 t';",
     "const APP_VER = '2026-09-23 t-demo';")
 
-with open(DST, 'w', encoding='utf-8') as f:
+with open(DST, 'w', encoding='utf-8', newline='\n') as f:   # 与 .gitattributes 的 eol=lf 保持一致
     f.write(s)
 
 for x in log:

@@ -6,14 +6,14 @@
 
 A voice-first scheduling app. Say *"明天下午三点半跟老张碰一下，大概一小时"* into your phone and the event is created — no opening a calendar, picking a date, dragging a time slot, typing a title.
 
-**Demo**: https://yuxinhou32-ux.github.io/voice-schedule/demo.html — no account, no backend, opens instantly
+**Try it**: https://yuxinhou32-ux.github.io/voice-schedule/ — no account, no backend, opens instantly
 **User guide**: [use.html](use.html) (served from the same site)
 
-It's a PWA: open the demo in Safari, add it to your Home Screen, and it behaves like an installed app — no app store involved.
+It's a PWA: open the link in Safari, add it to your Home Screen, and it behaves like an installed app — no app store involved.
 
 > **About the app's language**: the interface and the speech parser are both Chinese (Simplified). This is a working product built for Chinese speakers; the README documents the engineering.
 
-> **What runs where**: the public link above is a **cloud-free build** — no login, nothing sent to any server, everything stays in the visitor's own browser, preloaded with fictional sample events. The full `index.html` (the one with cloud sync) is published here as source, but **its cloud config is placeholders and it is not deployed publicly**. That's deliberate: a live, open-registration deployment bills its owner for every visitor's writes, so the deployed instance of this app is private by design. Point it at your own cloud project if you want sync.
+> **What runs where**: the public link above is a **cloud-free build** — no login, nothing sent to any server, everything stays in the visitor's own browser, preloaded with fictional sample events. The full cloud-sync build (`app.html`) is published here as source, but **its cloud config is placeholders and it is not deployed publicly**. That's deliberate: a live, open-registration deployment bills its owner for every visitor's writes, so the deployed instance of this app is private by design. Point it at your own cloud project if you want sync.
 
 ---
 
@@ -119,7 +119,7 @@ Round three finally cleaned it up: the field became plain text (numeric keypad o
 
 ## Implementation notes
 
-**Frontend**: a single `index.html` with styles and logic inlined — no build step, no framework, no npm dependencies (FullCalendar is vendored locally rather than pulled from a CDN). Open it and it runs; change a line and refresh.
+**Frontend**: a single `app.html` with styles and logic inlined — no build step, no framework, no npm dependencies (FullCalendar is vendored locally rather than pulled from a CDN). Open it and it runs; change a line and refresh.
 
 **Speech parsing** (`parser.js`): turns spoken Chinese into a structured event — time (including relative and recurring expressions like "下周三" and "每周一三五"), title, duration, type (event / item), and a predicted tag. Recurring expressions must be parsed *before* date expressions, or "每周一" gets consumed as "this Monday".
 
@@ -135,9 +135,9 @@ Round three finally cleaned it up: the field became plain text (numeric keypad o
 
 ```
 .
-├── index.html            Main app (single file: markup + styles + logic)
-├── demo.html             Cloud-free demo build (generated from index.html by build_demo.py)
-├── build_demo.py         Demo build script (strips cloud SDK / version check, injects sample data)
+├── index.html            Cloud-free demo — this is what the site serves (generated, do not edit)
+├── app.html              Full app with cloud sync (single file: markup + styles + logic)
+├── build_demo.py         Builds index.html (the demo) from app.html — strips cloud SDK / version check, injects sample data
 ├── sanitize.py           Pre-publish scrub: replaces the real endpoint / key / links with placeholders
 ├── parser.js             Spoken Chinese → structured event
 ├── fullcalendar.min.js   FullCalendar (vendored)
@@ -153,13 +153,13 @@ Round three finally cleaned it up: the field became plain text (numeric keypad o
     └── demo.js           Demo build tests (zero network requests / sample data / reset)
 ```
 
-> **On `demo.html`**: it's generated from `index.html` by `build_demo.py` and **should not be hand-edited**. After each release of the main app, re-run `python build_demo.py`. The demo has zero backend dependencies — the script self-verifies that the output contains no cloud SDK URL, no `fetch` call whatsoever, no absolute URL, and no cloud key.
+> **On `index.html`**: it's the generated cloud-free demo and **should not be hand-edited**. After each release of the main app, re-run `python build_demo.py`. The demo has zero backend dependencies — the script self-verifies that the output contains no cloud SDK URL, no `fetch` call whatsoever, no absolute URL, and no cloud key. `sanitize.py` re-asserts this on every release: if the site root ever regains a cloud SDK, a cloud key, or the real origin check, the run fails.
 
-> **Release order** (this is what keeps the public copy safe): copy the new build in from the working app → `python sanitize.py` → `python build_demo.py` → `npm test` → commit. `sanitize.py` finishes by scanning every git-tracked file for the real domain, key, app id, and local absolute paths, and fails loudly if any of them survive.
+> **Release order** (this is what keeps the public copy safe): copy the new build in from the working app as `app.html` → `python sanitize.py` → `python build_demo.py` → `npm test` → commit. `sanitize.py` finishes by scanning every git-tracked file for the real domain, key, app id, and local absolute paths, and fails loudly if any of them survive.
 
 ## Running and testing locally
 
-There's no build step; serve the directory and open `index.html`:
+There's no build step; serve the directory and open `app.html` (full app) or `index.html` (the demo):
 
 ```bash
 python -m http.server 8000

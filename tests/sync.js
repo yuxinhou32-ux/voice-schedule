@@ -4,8 +4,8 @@ const path = require('path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
 const D = path.join(__dirname, '..');
-const RAW = fs.readFileSync(path.join(D, 'index.html'), 'utf8');
-/* origin 不写死：从 index.html 现读 CLOUD_ENDPOINT，换成自己的地址后测试依然成立 */
+const RAW = fs.readFileSync(path.join(D, 'app.html'), 'utf8');
+/* origin 不写死：从 app.html 现读 CLOUD_ENDPOINT，换成自己的地址后测试依然成立 */
 const EP = ((RAW.match(/const CLOUD_ENDPOINT = '([^']+)'/) || [])[1]) || 'https://your-app.example.com';
 const fc = fs.readFileSync(path.join(D, 'fullcalendar.min.js'), 'utf8');
 const parser = fs.existsSync(path.join(D, 'parser.js')) ? fs.readFileSync(path.join(D, 'parser.js'), 'utf8') : '';
@@ -38,7 +38,7 @@ function build(seed, cloudSeed){
 
   const dom = new JSDOM(html, {
     runScripts: 'dangerously',
-    url: EP + '/',   // 与 index.html 的 CLOUD_ENDPOINT 一致，让 CLOUD_ONLINE === true
+    url: EP + '/',   // 与 app.html 的 CLOUD_ENDPOINT 一致，让 CLOUD_ONLINE === true
     pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(win) {
       win.ResizeObserver = class { observe(){} unobserve(){} disconnect(){} };
