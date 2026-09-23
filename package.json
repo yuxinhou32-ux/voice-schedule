@@ -6,9 +6,10 @@
   "keywords": ["pwa", "calendar", "voice", "scheduling"],
   "license": "UNLICENSED",
   "scripts": {
-    "test": "node tests/parse.js && node tests/acceptance.js && node tests/sync.js",
+    "test": "node tests/parse.js && node tests/acceptance.js && node tests/features.js && node tests/sync.js",
     "test:parse": "node tests/parse.js",
     "test:acceptance": "node tests/acceptance.js",
+    "test:features": "node tests/features.js",
     "test:sync": "node tests/sync.js"
   },
   "devDependencies": {

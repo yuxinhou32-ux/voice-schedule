@@ -14,8 +14,8 @@
 <meta name="theme-color" content="#F9F9FB">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
-<script src="fullcalendar.min.js?v=20260922p"></script>
-<script src="parser.js?v=20260922p"></script>
+<script src="fullcalendar.min.js?v=20260923t"></script>
+<script src="parser.js?v=20260923t"></script>
 <style>
   :root{
     --bg:#F9F9FB; --card:#FFFFFF; --ink:#0F1419; --ink2:#6B7280; --ink3:#9CA1AB;
@@ -87,6 +87,16 @@
   /* ===== 开关行 / 竖排按钮 ===== */
   .switchrow{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink2);line-height:1.45;cursor:pointer;}
   .switchrow input{width:18px;height:18px;accent-color:var(--accent);flex:none;}
+  /* ===== iOS 风格滑块开关 ===== */
+  .togrow{display:flex;gap:8px;margin-top:12px}
+  .togwrap{flex:1;display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--bg);border-radius:10px;padding:9px 12px;cursor:pointer;font-size:13px;color:var(--ink)}
+  .togwrap input{position:absolute;opacity:0;width:0;height:0}
+  .togtxt{display:flex;flex-direction:column;line-height:1.3}
+  .togtxt small{font-size:10px;color:var(--ink3);font-weight:400}
+  .tog{position:relative;flex:none;width:40px;height:24px;border-radius:12px;background:#D6D8DE;transition:background .18s}
+  .tog::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s}
+  .togwrap input:checked + .tog{background:var(--accent)}
+  .togwrap input:checked + .tog::after{transform:translateX(16px)}
   .btnrow.col{flex-direction:column;gap:8px;}
   /* ===== Tab 栏 ===== */
   #tabbar{flex:none;padding:10px 21px calc(10px + var(--safe-b));}
@@ -104,6 +114,9 @@
     box-shadow:0 -8px 28px rgba(15,20,25,.14);
   }
   #jrSheet{display:flex;flex-direction:column;max-height:92vh;}
+  /* 长面板（确认/修订）：标题和引用固定顶部，表单内容自己滚，超高不顶头 */
+  #confirmSheet,#evSheet{display:flex;flex-direction:column;max-height:94vh;}
+  #confirmSheet .sheetbody,#evSheet .sheetbody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .sheet.show{transform:translateY(0);}
   .grab{width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px;}
   .sheet h2{font-size:17px;font-weight:600;margin:0 0 12px;display:flex;align-items:center;gap:8px;}
@@ -637,24 +650,37 @@
     <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#9CA1AB" stroke-width="1.5"><rect x="7.5" y="2" width="5" height="9" rx="2.5"/><path d="M4.5 9.5a5.5 5.5 0 0 0 11 0M10 15v2.5" stroke-linecap="round"/></svg>
     <p id="quoteText"></p>
   </div>
+  <div class="sheetbody">
   <div class="field"><label>标题</label><input id="fTitle" type="text"></div>
   <div class="field"><label>标签（用于每周统计）</label><div class="tagrow" id="tagRow"></div></div>
   <div class="chips">
     <div class="field"><label>日期</label><input id="fDate" type="date"></div>
     <div class="field"><label>开始</label><input id="fStart" type="time"></div>
-    <div class="field"><label>时长</label>
-      <select id="fDur">
-        <option value="30">30 分钟</option>
-        <option value="60" selected>1 小时</option>
-        <option value="90">1.5 小时</option>
-        <option value="120">2 小时</option>
-        <option value="180">3 小时</option>
-        <option value="1440">全天</option>
-      </select>
+  </div>
+  <div class="field" style="margin-top:12px"><label>时长</label>
+    <input type="text" id="fDur" value="60" inputmode="decimal" placeholder="如 90、1.5" style="text-align:center;font-size:20px;font-weight:600;padding:11px 0">
+    <div class="wsseg" id="fDurUnitSeg" style="margin-top:8px">
+      <button data-du="min" class="on">分钟</button>
+      <button data-du="hr">小时</button>
+      <button data-du="day">全天</button>
     </div>
   </div>
   <div class="fine" id="fTimeHint" style="display:none;margin-top:8px">没听出具体时间 —— 选个开始时间，或把时长改成「全天」</div>
   <div class="fine" id="fRecurHint" style="display:none;margin-top:6px"></div>
+  <div class="field" style="margin-top:12px"><label>循环</label>
+    <select id="fRepeat">
+      <option value="none" selected>不循环</option>
+      <option value="daily">每天</option>
+      <option value="weekly">每周（自选星期）</option>
+      <option value="monthly">每月（自选几号）</option>
+    </select>
+  </div>
+  <div class="wdrow" id="fWeekly" style="display:none"></div>
+  <div class="field" id="fMonthly" style="display:none;margin-top:10px"><label>每月几号</label><input id="fMd" type="number" min="1" max="31" value="1"></div>
+  <div class="togrow">
+    <label class="togwrap"><span class="togtxt">时间节点<small>淡显 · 不计入统计</small></span><input type="checkbox" id="fNode"><span class="tog"></span></label>
+    <label class="togwrap"><span class="togtxt">重要事项<small>月历里显示成整块</small></span><input type="checkbox" id="fImp"><span class="tog"></span></label>
+  </div>
   <div class="chips" style="margin-top:12px">
     <div class="field"><label>地点</label><input id="fLoc" type="text" placeholder="可选"></div>
     <div class="field"><label>提醒</label>
@@ -666,12 +692,12 @@
       </select>
     </div>
   </div>
-  <label class="switchrow" style="margin-top:12px"><input type="checkbox" id="fImp"><span>标为重要（月历里显示成整块，不再只是一个圆点）</span></label>
   <div class="btnrow" style="margin-top:16px">
     <button class="btn ghost" id="cfCancel">取消</button>
     <button class="btn primary" id="cfOk">加入日程</button>
   </div>
   <p class="fine">识别可能不准，落库前请确认</p>
+  </div>
 </div>
 
 <!-- 事项修订面板 -->
@@ -719,19 +745,18 @@
 <div class="sheet" id="evSheet">
   <div class="grab"></div>
   <h2 id="evH2">修订日程</h2>
+  <div class="sheetbody">
   <div class="field"><label>标题</label><input id="evText" type="text"></div>
   <div class="chips" style="margin-top:12px">
     <div class="field"><label>日期</label><input id="evDate" type="date"></div>
     <div class="field"><label>开始</label><input id="evStart" type="time"></div>
-    <div class="field"><label>时长</label>
-      <select id="evDur">
-        <option value="30">30 分钟</option>
-        <option value="60" selected>1 小时</option>
-        <option value="90">1.5 小时</option>
-        <option value="120">2 小时</option>
-        <option value="180">3 小时</option>
-        <option value="1440">全天</option>
-      </select>
+  </div>
+  <div class="field" style="margin-top:12px"><label>时长</label>
+    <input type="text" id="evDur" value="60" inputmode="decimal" placeholder="如 90、1.5" style="text-align:center;font-size:20px;font-weight:600;padding:11px 0">
+    <div class="wsseg" id="evDurUnitSeg" style="margin-top:8px">
+      <button data-du="min" class="on">分钟</button>
+      <button data-du="hr">小时</button>
+      <button data-du="day">全天</button>
     </div>
   </div>
   <div class="chips" style="margin-top:12px">
@@ -756,14 +781,17 @@
   </div>
   <div class="wdrow" id="evWeekly" style="display:none"></div>
   <div class="field" id="evMonthly" style="display:none;margin-top:10px"><label>每月几号</label><input id="evMd" type="number" min="1" max="31" value="1"></div>
-  <label class="switchrow" style="margin-top:12px"><input type="checkbox" id="evNode"><span>时间节点（起床 / 吃饭 / 睡觉这类瞬时点，淡显示且不计入统计）</span></label>
-  <label class="switchrow" style="margin-top:8px"><input type="checkbox" id="evImp"><span>标为重要（月历里显示成整块，不再只是一个圆点）</span></label>
+  <div class="togrow">
+    <label class="togwrap"><span class="togtxt">时间节点<small>淡显 · 不计入统计</small></span><input type="checkbox" id="evNode"><span class="tog"></span></label>
+    <label class="togwrap"><span class="togtxt">重要事项<small>月历里显示成整块</small></span><input type="checkbox" id="evImp"><span class="tog"></span></label>
+  </div>
   <div class="btnrow" style="margin-top:16px">
     <button class="btn ghost" id="evDel">删除</button>
     <button class="btn ghost" id="evCancel">取消</button>
     <button class="btn primary" id="evSave">保存</button>
   </div>
   <p class="fine">拖动可改时间，点开这里可改全部字段或删除</p>
+  </div>
 </div>
 
 <!-- 循环日程：作用域选择 -->
@@ -870,7 +898,7 @@ function persistJournal(){ localStorage.setItem('voical-journal', JSON.stringify
   }
   if (changed) persistInbox();
 })();
-const APP_VER = '2026-09-22 q';   /* 显示在「我的」页底部：确认手机上跑的是哪一份代码 */
+const APP_VER = '2026-09-23 t';   /* 显示在「我的」页底部：确认手机上跑的是哪一份代码 */
 /* 偏好 */
 let PREF = { ws:'mon', installedAt:0, lastExportAt:0, backupRemindOn:'', lastSyncAt:0, dirty:{}, tomb:{}, icsRm:15 };
 try{ PREF = Object.assign(PREF, JSON.parse(localStorage.getItem('voical-pref')||'{}')); }catch(e){}
@@ -1434,23 +1462,82 @@ setTimeout(refreshEmpty, 300);
 
 /* ================= 语音 → 结构化：解析器在 parser.js ================= */
 
-let curTag = 'personal', inboxEditId = null, curRecur = null;
+let curTag = 'personal', inboxEditId = null, curRecur = null, curNode = false, fRdays = [];
 
 function impFlag(){ const el = $('#fImp'); return !!(el && el.checked); }
+function clampDurInput(el){
+  if (!el) return;
+  let v = String(el.value).replace(/[^0-9.]/g, '');
+  const i = v.indexOf('.');
+  if (i >= 0) v = v.slice(0, i+1) + v.slice(i+1).replace(/\./g, '');
+  el.value = v;
+}
+function selectedDurUnit(sel){ const b = $(sel); return (b && b.dataset && b.dataset.du) ? b.dataset.du : 'min'; }
+function setFDurUnit(du){
+  document.querySelectorAll('#fDurUnitSeg button').forEach(b=>b.classList.toggle('on', b.dataset.du===du));
+  $('#fDur').disabled = (du === 'day');
+}
+function setEvDurUnit(du){
+  document.querySelectorAll('#evDurUnitSeg button').forEach(b=>b.classList.toggle('on', b.dataset.du===du));
+  $('#evDur').disabled = (du === 'day');
+}
+function fDurMinutes(){
+  const u = selectedDurUnit('#fDurUnitSeg button.on');
+  if (u === 'day') return 1440;
+  const v = Math.max(0, parseFloat($('#fDur').value) || 0);
+  if (u === 'hr') return Math.round(v * 60);
+  return Math.round(v);
+}
+function evDurMinutes(){
+  const u = selectedDurUnit('#evDurUnitSeg button.on');
+  if (u === 'day') return 1440;
+  const v = Math.max(0, parseFloat($('#evDur').value) || 0);
+  if (u === 'hr') return Math.round(v * 60);
+  return Math.round(v);
+}
+function renderFWd(){
+  const box = $('#fWeekly'); box.innerHTML = '';
+  const order = [1,2,3,4,5,6,0];
+  for (const i of order){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'wdbtn' + (fRdays.indexOf(i)>=0 ? ' on' : '');
+    b.textContent = WEEK_S[i];
+    b.onclick = () => { const k = fRdays.indexOf(i); if (k>=0) fRdays.splice(k,1); else fRdays.push(i); renderFWd(); };
+    box.appendChild(b);
+  }
+}
+function syncFUI(){
+  const r = $('#fRepeat').value;
+  $('#fWeekly').style.display  = r==='weekly'  ? 'flex'  : 'none';
+  $('#fMonthly').style.display = r==='monthly' ? 'block' : 'none';
+  const u = selectedDurUnit('#fDurUnitSeg button.on');
+  $('#fDur').disabled = (u === 'day');
+}
+function fRecurValue(){
+  const r = $('#fRepeat').value;
+  if (r === 'daily')   return { type:'daily',   rdays:[], rmd:null };
+  if (r === 'weekly')  return { type:'weekly', rdays: fRdays.slice().sort((a,b)=>a-b), rmd:null };
+  if (r === 'monthly') return { type:'monthly', rdays:[], rmd: parseInt($('#fMd').value,10)||1 };
+  return { type:'none', rdays:[], rmd:null };
+}
 function buildEventFromForm(rawText){
   const title = $('#fTitle').value.trim() || '未命名日程';
   const d = $('#fDate').value; const tm = $('#fStart').value;
-  const dur = parseInt($('#fDur').value,10);
+  const dur = fDurMinutes();
   const loc = $('#fLoc').value.trim();
   const remind = parseInt($('#fRemind').value,10);
+  const node = !!($('#fNode') && $('#fNode').checked);
+  const recur = fRecurValue();
   if (!d){ showToast('请先选个日期', null); return null; }
+  if (dur <= 0){ showToast('时长至少 1 分钟', null); return null; }
   if (dur === 1440){
-    return { id:uid(), title, start:d+'T00:00', end:d+'T23:59', allDay:true, location:loc, remind, tag:curTag, imp: impFlag(), recur: curRecur };
+    return { id:uid(), title, start:d+'T00:00', end:d+'T23:59', allDay:true, location:loc, remind, tag:curTag, imp: impFlag(), node: node, recur: recur };
   }
   if (!tm){ showToast('请选个开始时间', null); return null; }
   const s = new Date(d+'T'+tm);
   const e = new Date(s.getTime()+dur*60000);
-  return { id:uid(), title, start:toLocal(s), end:toLocal(e), allDay:false, location:loc, remind, tag:curTag, imp: impFlag(), recur: curRecur };
+  return { id:uid(), title, start:toLocal(s), end:toLocal(e), allDay:false, location:loc, remind, tag:curTag, imp: impFlag(), node: node, recur: recur };
 }
 
 /* 口述分流：按「当前所在页面」决定去向，不再做全局三分类
@@ -1653,11 +1740,12 @@ $('#recOk').onclick = () => {
 /* ================= 确认流程 ================= */
 /* 没听出时间时给一句提示，填了时间或改全天就自动收起 */
 function syncTimeHint(){
-  const need = $('#fStart').value === '' && $('#fDur').value !== '1440';
+  const u = selectedDurUnit('#fDurUnitSeg button.on');
+  const need = $('#fStart').value === '' && u !== 'day';
   $('#fTimeHint').style.display = need ? 'block' : 'none';
 }
 $('#fStart').oninput  = syncTimeHint;
-$('#fDur').onchange   = syncTimeHint;
+$('#fDur').oninput = ()=>{ clampDurInput($('#fDur')); syncTimeHint(); };
 function openConfirm(rawText, p){
   closeSheet($('#recSheet'));
   inboxEditId = null;
@@ -1668,18 +1756,25 @@ function openConfirm(rawText, p){
   $('#fStart').value = p.h != null ? pad(p.h)+':'+pad(p.mi) : '';
   $('#fLoc').value = p.location;
   $('#fRemind').value = String([0,15,30,60].includes(p.remind) ? p.remind : 0);
-  if (p.allDay) $('#fDur').value = '1440';
-  else $('#fDur').value = [30,60,90,120,180].includes(p.durMin) ? String(p.durMin) : '60';
+  if (p.allDay){ $('#fDur').value = '1'; setFDurUnit('day'); }
+  else { $('#fDur').value = String(p.durMin || 60); setFDurUnit('min'); }
   curTag = p.tag || 'personal';
-  curRecur = p.recur || null;
+  curNode = false;
+  $('#fNode').checked = false;
+  const r = p.recur || { type:'none' };
+  $('#fRepeat').value = r.type;
+  if (r.type === 'weekly') fRdays = (r.rdays || []).slice(); else fRdays = [];
+  $('#fMd').value = String(r.rmd || 1);
+  renderFWd();
+  syncFUI();
   const rh = $('#fRecurHint');
   if (rh){
-    if (curRecur){
+    if (r.type !== 'none'){
       const WD = ['一','二','三','四','五','六','日'];
-      const txt = curRecur.type === 'daily' ? '每天'
-        : curRecur.type === 'monthly' ? ('每月 ' + curRecur.rmd + ' 号')
-        : ('每周 ' + (curRecur.rdays || []).map(i => WD[i-1]).join('、'));
-      rh.textContent = '识别为重复日程：' + txt + '，会在这些天自动出现';
+      const txt = r.type === 'daily' ? '每天'
+        : r.type === 'monthly' ? ('每月 ' + r.rmd + ' 号')
+        : ('每周 ' + (r.rdays || []).map(i => WD[i-1]).join('、'));
+      rh.textContent = '已识别循环：' + txt + '，可手动修改';
       rh.style.display = 'block';
     } else {
       rh.style.display = 'none';
@@ -1690,6 +1785,8 @@ function openConfirm(rawText, p){
   renderTagRow();
   openSheet($('#confirmSheet'));
 }
+$('#fRepeat').onchange = syncFUI;
+document.querySelectorAll('#fDurUnitSeg button').forEach(b=>{ b.onclick = ()=>{ setFDurUnit(b.dataset.du); syncTimeHint(); }; });
 $('#cfCancel').onclick = () => { inboxEditId = null; closeSheet($('#confirmSheet')); };
 $('#cfOk').onclick = () => {
   const ev = buildEventFromForm();
@@ -2074,7 +2171,6 @@ $('#tdDel').onclick = () => {
 
 /* ---- 日程修订面板：点日历上的日程块即可改全部字段 / 删除 ---- */
 let evEditId = null, evTag = 'personal', evEditDs = null, evRdays = [];
-const EV_DURS = [30,60,90,120,180,1440];
 function renderEvTagRow(){
   const row = $('#evTagRow'); row.innerHTML = '';
   for (const k of TAG_KEYS){
@@ -2107,6 +2203,8 @@ function syncEvUI(){
   $('#evMonthly').style.display = r==='monthly' ? 'block' : 'none';
 }
 $('#evRepeat').onchange = syncEvUI;
+document.querySelectorAll('#evDurUnitSeg button').forEach(b=>{ b.onclick = ()=> setEvDurUnit(b.dataset.du); });
+$('#evDur').oninput = ()=> clampDurInput($('#evDur'));
 /* ds 非空 = 只改循环里的这一次（写入 overrides） */
 function openEvSheet(id, ds){
   const e = events.find(x=>x.id===id);
@@ -2118,10 +2216,9 @@ function openEvSheet(id, ds){
   const startStr = ov.start || base.start;
   const endStr   = ov.end   || base.end;
   const st = new Date(startStr);
-  let dur = 60;
-  if (e.allDay) dur = 1440;
-  else { const en = new Date(endStr); dur = Math.round((en-st)/60000) || 60; }
-  dur = EV_DURS.reduce((best,v)=> Math.abs(v-dur) < Math.abs(best-dur) ? v : best, 60);
+  let dur = 60; let du = 'min';
+  if (e.allDay){ dur = 1; du = 'day'; }
+  else { const en = new Date(endStr); dur = Math.round((en-st)/60000) || 60; if (dur >= 60 && dur % 60 === 0){ dur = dur/60; du = 'hr'; } }
   evRdays = ((e.recur && e.recur.rdays)||[]).slice();
   $('#evH2').textContent = ds
     ? ('只改这一次 · '+(st.getMonth()+1)+'月'+st.getDate()+'日')
@@ -2130,6 +2227,7 @@ function openEvSheet(id, ds){
   $('#evDate').value     = fmtDate(st);
   $('#evStart').value    = e.allDay ? '09:00' : fmtHM(st);
   $('#evDur').value      = String(dur);
+  setEvDurUnit(du);
   $('#evLoc').value      = (ov.location != null) ? ov.location : (e.location || '');
   $('#evRemind').value   = String((ov.remind != null) ? ov.remind : (e.remind || 0));
   $('#evNode').checked   = !!((ov.node != null) ? ov.node : e.node);
@@ -2154,7 +2252,8 @@ $('#evSave').onclick = () => {
   if (!t){ showToast('标题不能为空', null); return; }
   const d = $('#evDate').value;
   if (!d){ showToast('请选择日期', null); return; }
-  const dur = parseInt($('#evDur').value, 10) || 60;
+  const dur = evDurMinutes();
+  if (dur <= 0){ showToast('时长至少 1 分钟', null); return; }
   let st, en;
   if (dur === 1440){ st = d+'T00:00'; en = d+'T23:59'; }
   else {
