@@ -8,7 +8,7 @@
 
 **在线使用**：https://your-app.example.com/
 **使用说明**：https://your-app.example.com/use.html
-**公开演示版**：https://<你的用户名>.github.io/voice-schedule/demo.html （无账号、无云端，打开即用）
+**公开演示版**：https://yuxinhou32-ux.github.io/voice-schedule/demo.html （无账号、无云端，打开即用）
 
 形态是 PWA：用 Safari 打开链接，添加到主屏幕，就和装了个 App 一样，不用上架应用商店。
 

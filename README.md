@@ -8,7 +8,7 @@ A voice-first scheduling app. Say *"明天下午三点半跟老张碰一下，�
 
 **Live app**: https://your-app.example.com/
 **User guide**: https://your-app.example.com/use.html
-**Public demo**: https://<your-username>.github.io/voice-schedule/demo.html (no account, no backend, opens instantly)
+**Public demo**: https://yuxinhou32-ux.github.io/voice-schedule/demo.html (no account, no backend, opens instantly)
 
 It's a PWA: open the link in Safari, add it to your Home Screen, and it behaves like an installed app — no app store involved.
 
