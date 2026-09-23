@@ -1,191 +1,197 @@
-# 口述日程 · Voice Schedule
+# Voice Schedule
 
-> 说一句话，日程就排好了。
+[中文](README.zh-CN.md) | **English**
 
-一个语音优先的日程应用。对着手机说「明天下午三点半跟老张碰一下，大概一小时」，日程就填好了——不用点开日历、选日期、拖时间、填标题。
+> Say a sentence. It's on your calendar.
 
-**在线使用**：https://your-app.example.com/
-**使用说明**：https://your-app.example.com/use.html
-**公开演示版**：https://<你的用户名>.github.io/voice-schedule/demo.html （无账号、无云端，打开即用）
+A voice-first scheduling app. Say *"明天下午三点半跟老张碰一下，大概一小时"* into your phone and the event is created — no opening a calendar, picking a date, dragging a time slot, typing a title.
 
-形态是 PWA：用 Safari 打开链接，添加到主屏幕，就和装了个 App 一样，不用上架应用商店。
+**Live app**: https://your-app.example.com/
+**User guide**: https://your-app.example.com/use.html
+**Public demo**: https://<your-username>.github.io/voice-schedule/demo.html (no account, no backend, opens instantly)
 
-> **两个版本的区别**：正式版（第一条链接）带云同步，登录后数据跟着账号走。演示版是**无云版本**——不登录、不向任何服务器发数据，所有操作只存在访客自己的浏览器里，预置了一批虚构示例日程。演示版是给想「点开就试」的人用的，正式版才是给自己用的。
+It's a PWA: open the link in Safari, add it to your Home Screen, and it behaves like an installed app — no app store involved.
+
+> **About the app's language**: the interface and the speech parser are both Chinese (Simplified). The demo and the live app are best understood as a working product for Chinese speakers; this README documents the engineering.
+
+> **Two builds**: the live app (first link) has cloud sync — log in and your data follows your account. The demo is a **cloud-free build**: no login, no data sent to any server, everything stays in the visitor's own browser, preloaded with fictional sample events. The demo exists so people can open it and try it immediately; the live app is the one you'd actually use day to day.
 
 ---
 
-## 为什么做这个
+## Why this exists
 
-现有日历 App 记录一件事的成本太高。想记「周五晚上七点看场电影」，得点开 App、点加号、选日期、滚时间、输标题、保存——六步。成本高到人干脆不记了，日程表于是永远空着，失去意义。
+Existing calendar apps cost too much per entry. To record "movie, Friday 7pm" you open the app, tap plus, pick a date, scroll to a time, type a title, save — six steps. The cost is high enough that people simply stop bothering, and the calendar stays empty and useless.
 
-而人在真实场景里想记事情的那一刻，脑子里冒出来的是**一句话**，不是六个表单字段。所以这个应用的取舍很明确：**让「说一句」成为默认路径**，把结构化留给程序去做。
+But in the moment you actually want to record something, what shows up in your head is **a sentence**, not six form fields. So the trade-off is deliberate: **make "just say it" the default path**, and leave the structuring to the program.
 
-## 它能做什么
+## What it does
 
-| 想做的事 | 怎么做 |
+| What you want | How you do it |
 | --- | --- |
-| 建日程 | 说一句「明天下午三点半跟老张碰一下，大概一小时」 |
-| 建提醒事项 | 说「记得买牛奶」，没有具体时间的自动进事项清单 |
-| 时长自填 | 确认卡片里直接输数字，再选「分钟 / 小时 / 全天」，不限固定档位 |
-| 循环日程 | 说「每周一三五晚上七点半健身」自动识别，也能在卡片里手动改成每天 / 每周 / 每月 |
-| 标记时间点 | 起床、吃药这类瞬时点单独开一个开关，淡显且不计入统计 |
-| 标为重要 | 打开开关后，月历里这条显示成整块，而不是一个小圆点 |
-| 写日志 | 日程页右上角进日志，长按麦克风说一段，停顿几秒不会断 |
-| 看安排 | 日 / 周 / 月三种视图，顶部一条连续的日期流可直接拖动 |
-| 多端同步 | 登录后日程、事项、日志共用一套云端数据 |
-| 到点提醒 | 导出 `.ics` 交给苹果日历，由 iOS 系统推送通知 |
+| Create an event | Say "明天下午三点半跟老张碰一下，大概一小时" |
+| Create a to-do item | Say "记得买牛奶" — anything without a concrete time lands in the item list |
+| Any duration | Type the number directly in the confirm card, then pick minutes / hours / all-day — not limited to fixed presets |
+| Recurring events | "每周一三五晚上七点半健身" is recognized automatically, and can be edited to daily / weekly / monthly in the card |
+| Time anchors | Instant points like waking up or taking medication get their own toggle — rendered faint, excluded from totals |
+| Mark as important | Flip the switch and the entry renders as a full block in month view instead of a small dot |
+| Journal | Top-right of the calendar page; hold the mic and talk — a few seconds of pause won't cut you off |
+| See your schedule | Day / week / month views, with a continuous date strip along the top you can drag |
+| Multi-device sync | Log in and events, items, and journal entries share one cloud dataset |
+| Reminders | Export `.ics` into Apple Calendar and let iOS deliver the notifications |
 
-数据按账号隔离：同一台设备换账号登录看到的是各自的日程，分享链接给别人不会看到你的数据。
+Data is isolated per account: sign in with a different account on the same device and you see that account's schedule. Sharing the link doesn't expose your data.
 
-**日志**是除日程之外用得最多的一块：一天过完说一段，打上标签存档，以后按关键词能搜回来（比如搜「卧推」，把每次训练记录按日期翻出来）。它不是待办，是给未来的自己留下的记录。
+**The journal** is the second most-used part after the calendar itself: talk through your day, tag it, and search it back later by keyword (search "卧推" — bench press — and every training session comes back ordered by date). It isn't a to-do list; it's a record left for your future self.
 
-## 几个设计取舍
+## Design trade-offs
 
-**识别结果不直接入库，先落地成可编辑卡片。** 语音识别一定会错，直接写库等于把错误固化成事实。所以流程是「说 → 解析 → 卡片 → 人确认 → 入库」，错误在入库前就被拦掉。
+**Recognition results never go straight into storage — they land as an editable card first.** Speech recognition will get things wrong, and writing straight to the database turns mistakes into facts. So the flow is *speak → parse → card → human confirms → store*, and errors are caught before they're persisted.
 
-**有确定时间的才进日程，没有的进事项。** 「下周三上午十点开会」和「记得买牛奶」在语言上都是「记一件事」，但对时间的确定性完全不同。把它们混在一张日历上，日历就没法看了。
+**Only things with a definite time become events; everything else becomes an item.** "下周三上午十点开会" and "记得买牛奶" are both "remember this" in natural language, but they differ completely in how certain the time is. Mixing them onto one calendar makes the calendar unreadable.
 
-**重复日程用规则存，不展开成实例。** 「每周一三五」存成一个规则，而不是往日历里塞几十条。改起来是改一条，不是改几十条。
+**Recurring events are stored as rules, not expanded into instances.** "每周一三五" is one rule, not dozens of rows pushed into the calendar. Editing it means editing one thing, not dozens.
 
-**留白比填满重要。** 这个应用只负责把你确定要说的事情记下来，不做智能排程、不主动往表里塞"建议"。日程表太满本身就是压力源。
+**Empty space matters more than a full schedule.** The app's only job is to record what you explicitly decided to say. No smart scheduling, no proactively filling the table with "suggestions". An over-full calendar is itself a source of stress.
 
-## 迭代记录
+## What broke in production
 
-上线给真实的人用之后，出了几个只有真实使用才会暴露的问题。这部分是整个过程里最有价值的部分——**每一个都靠肉眼发现异常，然后一层层往下挖到根因，而不是「看起来好了」就收工。**
+Once real people were using it, a set of problems surfaced that only real usage exposes. This is the most valuable part of the whole project — **every one of them was spotted by eye, then dug down to a root cause layer by layer, rather than calling it done because it "looks fixed".**
 
-### 一、云端只同步上去了 3 条，本地有 14 条
+### 1. Only 3 of 14 events reached the cloud
 
-新设备登录后只能拉到 3 条日程。查云端数据库确认：服务端确实只有 3 条。
+A new device could only pull 3 events. Querying the cloud database confirmed it: the server really did have only 3.
 
-根因有三个，每个都是独立的：
+Three independent root causes:
 
-1. 另一个页面（一键写入页）往本地写数据时设了时间戳，却没把它加进**待推送队列**。启动时的兜底逻辑只捡「没有时间戳」的条目，于是这 14 条永远进不了队列——只有后来手动编辑过的那 3 条上了云。
-2. 同步删除记录时**完全不比对时间戳**。任何一条历史删除记录都会无条件干掉本地更新的数据，而且删除永远赢。改成：本地版本更新时不删，反而把这条数据推回云端撤销删除记录。
-3. 推送不分批，失败就整批清队列。改成 50 条一批，**只清真正写成功的那一批**，失败的留在队列里重试。
+1. Another page (the batch-import page) wrote to local storage with a timestamp but never added those records to the **push queue**. The startup fallback only picked up entries *without* a timestamp, so those 14 could never enter the queue — only the 3 that were later edited by hand made it up.
+2. Delete records were synced **without comparing timestamps at all**. Any old tombstone would unconditionally wipe newer local data, and deletes always won. Fixed: when the local version is newer, don't delete — push the record back up to revoke the tombstone instead.
+3. Pushes weren't batched: a single failure cleared the entire queue. Fixed: batches of 50, and **only the batch that actually succeeded is cleared**; failed batches stay in the queue for retry.
 
-另外把同步顺序固定成**先拉后推**。这个顺序是必须的——先推后拉会用本机的旧版本覆盖掉云端刚刚发生的删除。用一把串行锁保证拉取和推送排队执行，而不是靠每个调用点自己记得 await。
+The sync order was also locked to **pull first, then push**. That order is not optional — pushing first overwrites a delete that just happened in the cloud with a stale local copy. A serial lock makes pull and push queue up properly, instead of relying on every call site to remember to `await`.
 
-### 二、每次打开都不一样：有时一片空白，有时数据跳出来
+### 2. Different every time it opened: sometimes blank, sometimes data popping in
 
-测试里模拟「打开 → 用几秒 → 关掉」反复十次，复现了：
+Simulating "open → use for a few seconds → close", ten times in a row, reproduced it:
 
-| 第几次 | 打开时看到 | 关掉时 |
+| Attempt | On open | On close |
 | --- | --- | --- |
-| 第 1 次 | 0 条（空白） | 0 条 |
-| 第 2 次 | 0 条 | 0 条 |
-| 第 3 次 | 0 条 → 中途跳到 14 条 | 14 条 |
-| 第 4 次起 | 14 条 | 14 条 |
+| 1 | 0 (blank) | 0 |
+| 2 | 0 | 0 |
+| 3 | 0 → jumps to 14 midway | 14 |
+| 4 onwards | 14 | 14 |
 
-根因是**渲染和同步的竞态**：同步是异步的，而且要等 1.5 秒才启动，而画面在打开瞬间就用本地数据画完了。新设备是空容器，画出来就是空白。每次开关都在不同的进度上把同步掐断，于是每次看到的是不同阶段的半成品。
+The root cause was a **race between rendering and sync**: sync is asynchronous and only started after 1.5 s, while the view had already painted from local data the instant the page opened. A fresh device has an empty container, so it painted blank. Each open/close cut sync off at a different point, so each open showed a different half-finished state.
 
-改法：同步提前到 150 毫秒启动并加 20 秒节流；同步没回来时显示「正在从云端同步…」而不是「今天还没有日程」；同步完成后无条件重绘；启动时按 id 去重；静态资源加版本串，杜绝「新 HTML + 旧 JS」混搭。
+Fixed: sync now starts at 150 ms with a 20 s throttle; while sync is in flight the UI says "正在从云端同步…" instead of "今天还没有日程"; the view redraws unconditionally when sync completes; events are de-duplicated by id on startup; and static assets are versioned so a new HTML can never load alongside a stale JS.
 
-### 三、一天里出现好多个日程、事件变成细线、月历冒出小点
+### 3. Multiple copies in one day, events rendered as thin slivers, dots appearing in month view
 
-四个看起来无关的症状，其实是同一个根因。
+Four symptoms that look unrelated — one root cause.
 
-日历的初始渲染走的是**事件源**（切视图时由 FullCalendar 自动重新拉取），而同步完成后的重绘用的是另一套机制——逐条 `addEvent()`。`addEvent` 加进去的属于「个人事件」，**不属于事件源**。两套并存之后，每「同步一次 + 切一次视图」，画面上的日程就多叠加一份。
+The calendar's initial render goes through an **event source** (FullCalendar refetches it automatically on view change), while the redraw after sync used a different mechanism: per-event `addEvent()`. Events added via `addEvent` count as "personal events" and are **not part of the event source**. With both paths live, every "sync + view change" stacked one more copy on screen.
 
-复现数据：初始 2 条 → 同步后 3 条（`addEvent` 不看视图范围，把明天的也塞了进来）→ 切一圈视图 **6 条**。
+Reproduction: 2 events initially → 3 after sync (`addEvent` ignores the view range and pulled in tomorrow's too) → **6** after cycling through the views.
 
-于是：一天好多个 = 逐轮叠加；细线 = 同一位置的两份被并排挤压、各占一半宽度；月历小点 = 加进去的普通定时事件在月视图被默认渲染成小点；「每次打开都不一样」= 叠加倍数取决于上次开关和切视图的时机。
+Hence the four symptoms: multiple copies per day = copies accumulating round by round; thin slivers = two copies in the same slot squeezed side by side, each getting half the width; dots in month view = plain timed events added via `addEvent` get default-rendered as dots; "different every time" = the number of copies depended on when you last opened it and switched views.
 
-改法：全部收敛到**事件源**这一条路径（`refetchEvents()`），这也是应用里平时增删改日程一直在用的、被验证过的那条。
+Fixed: everything collapses onto the single **event source** path (`refetchEvents()`) — the same path the app already used for everyday create/update/delete, and the one that had been verified.
 
-> 这第三个问题的排查里有个教训值得记下来：前两轮我一直复现不出来，因为我的测试只模拟了「打开 → 同步」，而真实使用序列是「打开 → 同步 → **切视图**」。差的这一步正是引爆点。
+> One lesson from this third bug: for two rounds I couldn't reproduce it, because my test only simulated "open → sync", whereas the real sequence is "open → sync → **change view**". That missing step was the trigger.
 
-### 四、循环日程在一次版本更新后消失了
+### 4. Recurring events disappeared after a version update
 
-用的人反馈：「我之前设置的循环功能怎么没了？」
+A user reported: "Where did my recurring events go? I had them set up before."
 
-原因是**回归**——循环规则的读写路径在几轮改动里被反复触碰，表单新建时没有把循环字段带上，于是「说到循环」还能识别，「手动确认入库」这一步却把它丢了。这类 bug 的特征是：不报错、不崩溃，只在特定路径上静默丢一个字段。
+The cause was a **regression**: the read/write path for recurrence rules had been touched repeatedly over several rounds, and the form builder stopped carrying the recurrence field. So "say something with a recurrence" was still recognized, but the "confirm and save" step dropped it. Bugs like this don't throw and don't crash — they silently lose one field on one particular path.
 
-修法的重点不在补那一行，而在于**把「表单字段 → 数据字段」的映射当成一个必须被测试覆盖的契约**——解析器新增任何字段，都必须同时出现在表单构建里，否则就是一次静默丢失。后续的专项测试会逐条验证 `node`（时间点）、`imp`（重要）、`recur`（循环）这些字段确实落库。
+The point of the fix wasn't the missing line; it was treating the **form-field → data-field mapping as a contract that tests must cover**. Any field the parser learns to produce must also appear in the form builder, or it will be silently dropped. The dedicated test suite now asserts, field by field, that `node` (time anchor), `imp` (important), and `recur` (recurrence) actually reach storage.
 
-### 五、时长输入框被挤成一条缝，连着修了三轮
+### 5. The duration input was squeezed into a sliver — it took three rounds
 
-这一轮最能说明「看起来修好了」有多不可靠。
+This one best illustrates how unreliable "looks fixed" is.
 
-第一轮的需求是「时长不要固定档位」。做法是把下拉框换成「数字输入 + 分钟/小时/全天三个按钮」的组合，**塞进了原本三列均分的行里**。测试全绿，功能确实通——然后真机截图上，输入框被挤得只剩一条光标，单位按钮被顶出屏幕右边界。
+Round one's requirement was "duration shouldn't be limited to fixed presets". The approach: replace the dropdown with "number input + minute / hour / all-day buttons", **packed into a row that was already split three ways**. All tests green, the feature genuinely worked — and then a screenshot from a real phone showed the input squeezed down to a bare caret, with the unit buttons pushed past the right edge of the screen.
 
-第二轮把时长挪出来独占一行。以为解决了。真机反馈回来：切到「分钟」时面板变高，标题被顶出可视区；而且 `type="number"` 在手机上自带上下步进键，还能手动敲进负数。
+Round two moved the duration onto its own full-width row. Figured that was it. Real-device feedback came back: switching to "minute" made the panel taller and pushed the title out of view; and `type="number"` brings its own up/down steppers on mobile while still accepting a typed minus sign.
 
-第三轮才收干净：数字框改成纯文本输入（手机上呼出数字键盘、没有步进键、键盘上没有负号），输入时实时过滤非法字符，保存时再拦一道「时长至少 1 分钟」；两个开关（时间节点 / 重要事项）改成并排的 iOS 风格滑块，谁都不挤谁；确认面板的标题固定顶部，只有表单区自己滚，内容再高也不会把标题顶走。
+Round three finally cleaned it up: the field became plain text (numeric keypad on mobile, no steppers, no minus key on the keyboard), invalid characters are filtered as you type, and saving rejects anything under one minute; the two toggles (time anchor / important) became side-by-side iOS-style switches so neither crowds the other; and the confirm sheet's title is pinned to the top with only the form area scrolling, so no amount of content can push it off.
 
-**三轮的差别不在功能，在「真机上看得见吗」。** 自动化测试里 DOM 断言全过，因为它测的是「值对不对」，测不出「这个框在 390px 宽的屏幕上还剩几个像素」。这之后所有界面改动都额外做一步：按手机宽度渲染出来，用眼睛看一遍再发。
+**The difference across the three rounds wasn't functionality — it was whether you could see it on a real device.** The automated DOM assertions passed throughout, because they check *values*, not *how many pixels this box has left on a 390 px screen*. Since then, every UI change gets one extra step: render it at phone width and look at it before shipping.
 
-## 技术实现
+## Implementation notes
 
-**前端**：单个 `index.html`，样式和逻辑都内联，没有构建步骤、没有框架、没有 npm 依赖（FullCalendar 本地引入，不走 CDN）。打开就能跑，改一行刷新就生效。
+**Frontend**: a single `index.html` with styles and logic inlined — no build step, no framework, no npm dependencies (FullCalendar is vendored locally rather than pulled from a CDN). Open it and it runs; change a line and refresh.
 
-**语音解析**（`parser.js`）：把中文口语解析成结构化日程——时间（含「下周三」「每周一三五」这类相对与重复表达）、正文、时长、类型（日程 / 事项）、标签预判。重复表达必须先于日期表达解析，否则「每周一」会被当成「这周一」消费掉。
+**Speech parsing** (`parser.js`): turns spoken Chinese into a structured event — time (including relative and recurring expressions like "下周三" and "每周一三五"), title, duration, type (event / item), and a predicted tag. Recurring expressions must be parsed *before* date expressions, or "每周一" gets consumed as "this Monday".
 
-**数据**：本地用 localStorage，字段变化时同步进待推送队列。
+**Data**: localStorage locally, with every field change pushed into a pending-sync queue.
 
-**云同步**：后端用 WorkBuddy Cloud Service（Postgres）。单条记录用毫秒时间戳做 LWW 合并，删除用墓碑记录传播。列表类偏好（如日志标签）不能用整份覆盖——新设备刚登录时本地只有默认值，一覆盖就等于删掉别的设备的数据，所以按 key 取并集。
+**Cloud sync**: backed by WorkBuddy Cloud Service (Postgres). Each record carries a millisecond timestamp for last-write-wins merging, and deletions propagate as tombstone records. List-type preferences (such as journal tags) must *not* be overwritten wholesale — a newly signed-in device only has default values locally, so overwriting would delete another device's data; they're merged as a union keyed by tag instead.
 
-> 代码里的 `CLOUD_KEY` 是云端 publishable key（`wbpk_` 前缀），本就是设计成公开的——它只用于前端初始化云 SDK、标识应用，配合服务端的行级安全（RLS）做数据隔离，不含任何越权凭证。真正的安全边界在服务端按账号隔离，不在这串 key。
+> The `CLOUD_KEY` in the source is a cloud publishable key (`wbpk_` prefix). It's designed to be public: it only initializes the cloud SDK on the frontend and identifies the app, working alongside server-side row-level security (RLS) for isolation. It contains no privilege-escalating credential. The real security boundary is per-account isolation on the server, not this string.
 
-**导出**：生成 `.ics` 交给苹果日历，定时提醒由 iOS 系统负责，应用本身不需要常驻后台。
+**Export**: generates `.ics` for Apple Calendar, leaving scheduled reminders to iOS — the app itself never needs to run in the background.
 
-## 目录结构
+## Repository layout
 
 ```
 .
-├── index.html            主应用（单文件：结构 + 样式 + 逻辑）
-├── demo.html             无云演示版（由 build_demo.py 从 index.html 生成）
-├── build_demo.py         演示版构建脚本（移除云 SDK / 版本检查，注入示例数据）
-├── parser.js             中文口语 → 结构化日程
-├── fullcalendar.min.js   FullCalendar（本地引入）
-├── use.html              使用说明
-├── routine.html          一键写入页（批量导入固定日程）
-├── ver.json              当前版本号
-├── icon-180.png          主屏幕图标
+├── index.html            Main app (single file: markup + styles + logic)
+├── demo.html             Cloud-free demo build (generated from index.html by build_demo.py)
+├── build_demo.py         Demo build script (strips cloud SDK / version check, injects sample data)
+├── parser.js             Spoken Chinese → structured event
+├── fullcalendar.min.js   FullCalendar (vendored)
+├── use.html              User guide
+├── routine.html          Batch-import page (bulk-add fixed routines)
+├── ver.json              Current version string
+├── icon-180.png          Home Screen icon
 └── tests/
-    ├── parse.js          解析器单测（时间 / 重复 / 分类）
-    ├── acceptance.js     端到端验收（口述 → 确认 → 落库 → 渲染 → 导出 → 重载恢复）
-    ├── features.js       表单功能专项（时长自填 / 时间点 / 循环 / 重要 / 非法输入）
-    └── sync.js           云同步专项（补队列 / 删除记录比对 / 分批重试）
+    ├── parse.js          Parser unit tests (time / recurrence / classification)
+    ├── acceptance.js     End-to-end acceptance (speak → confirm → store → render → export → reload)
+    ├── features.js       Form feature tests (custom duration / time anchors / recurrence / important / invalid input)
+    ├── sync.js           Cloud sync tests (queue fallback / tombstone comparison / batched retry)
+    └── demo.js           Demo build tests (zero network requests / sample data / reset)
 ```
 
-> **关于 `demo.html`**：它是 `build_demo.py` 从 `index.html` 生成的演示版，**不需要手改**。每次主应用发版后重跑一次 `python build_demo.py` 即可。演示版零后端依赖——脚本自带校验，产物里云 SDK 外链、正式域名、云端密钥、任何 `fetch` 调用，残留全部为 0。
+> **On `demo.html`**: it's generated from `index.html` by `build_demo.py` and **should not be hand-edited**. After each release of the main app, re-run `python build_demo.py`. The demo has zero backend dependencies — the script self-verifies that the output contains no cloud SDK URL, no production domain, no cloud key, and no `fetch` call whatsoever.
 
-## 本地运行与测试
+## Running and testing locally
 
-前端没有构建步骤，起一个静态服务器打开 `index.html` 即可：
+There's no build step; serve the directory and open `index.html`:
 
 ```bash
 python -m http.server 8000
-# 浏览器打开 http://localhost:8000
+# then open http://localhost:8000
 ```
 
-> 云端登录只在正式域名下开启（代码里有一处来源校验），本地跑只会启用本机存储。
+> Cloud login is only enabled on the production domain (there's an origin check in the code). Running locally uses local storage only.
 
-测试用 jsdom 把整个页面真跑起来，直接操作 DOM 做断言，而不是只测函数：
+Tests drive the whole page for real under jsdom, asserting against the DOM rather than unit-testing functions in isolation:
 
 ```bash
 npm install
 npm test
 ```
 
-单跑某一项：
+Individual suites:
 
 ```bash
-npm run test:parse        # 解析器单测            18 项
-npm run test:acceptance   # 端到端验收            45 项
-npm run test:features     # 表单功能专项          38 项
-npm run test:sync         # 云同步                14 项
+npm run test:parse        # Parser unit tests         18 cases
+npm run test:acceptance   # End-to-end acceptance     45 cases
+npm run test:features     # Form features             38 cases
+npm run test:sync         # Cloud sync                14 cases
+npm run test:demo         # Demo build                33 cases
 ```
 
-## 关于这个项目的协作方式
+## How this project was built
 
-这个项目是**一个人 + 一个 AI agent** 做出来的，分工是明确的：
+This was made by **one person plus an AI agent**, with an explicit division of labour:
 
-- **我负责**：定义要解决什么问题、界面的交互与信息层级、每个功能的取舍、判断「修好了没有」，以及用真实使用中发现的问题去驱动下一轮迭代。
-- **AI agent 负责**：把上面这些翻译成可以运行的代码。
+- **Mine**: deciding what problem to solve, the interaction model and information hierarchy, the trade-off behind every feature, judging whether something was *actually* fixed, and driving each next round from problems found in real use.
+- **The AI agent's**: turning all of the above into running code.
 
-上面那几轮排查能说明这种协作是怎么运作的：异常是由使用者的眼睛发现的（「每次打开都不一样」），根因是顺着这条线索一层层挖出来的（云端数据 → 同步逻辑 → 渲染机制），而每一个「看起来修好了」的版本都要拿自动化测试证伪一次才算数。**这里面真正稀缺的不是写代码，是知道该往哪里看。**
+The five bug stories above show how that division works in practice: the anomalies were spotted by a human eye ("it's different every time I open it"), the root causes were dug out by following that thread downwards (cloud data → sync logic → rendering internals), and every "looks fixed" build had to survive an attempt to falsify it with automated tests. **The scarce part here isn't writing code — it's knowing where to look.**
 
-## 许可
+## License
 
-[MIT License](LICENSE) — 可自由使用、修改、分发。软件按「原样」提供，作者不承担使用后果。
+[MIT License](LICENSE) — free to use, modify, and distribute. Provided "as is", without warranty of any kind.
