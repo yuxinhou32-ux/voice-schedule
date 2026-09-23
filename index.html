@@ -2440,7 +2440,7 @@ function checkNewVer(){
   if (Date.now() - verCheckedAt < 6e5) return;   /* 10 分钟内不重复请求 */
   verCheckedAt = Date.now();
   try{
-    fetch('https://your-app.example.com/ver.json?t=' + Date.now(), { cache:'no-store' })
+    fetch('ver.json?t=' + Date.now(), { cache:'no-store' })
       .then(r => r.ok ? r.json() : null)
       .then(j => { verNew = (j && j.ver && j.ver !== APP_VER) ? j.ver : ''; renderVerTip(); })
       .catch(()=>{});
@@ -2649,7 +2649,7 @@ document.querySelectorAll('#wsSeg button').forEach(b=>{
 });
 
 /* ================= 云端同步（WorkBuddy Cloud） ================= */
-const CLOUD_ENDPOINT = 'https://your-app.example.com';
+const CLOUD_ENDPOINT = 'https://your-app.example.com';   /* 换成你自己的云项目地址 */
 const CLOUD_KEY = 'wbpk_YOUR_APP_ID_YOUR_PUBLISHABLE_KEY';
 const CLOUD_ONLINE = location.origin === CLOUD_ENDPOINT;   // 云登录仅在线上域名生效
 /* 必须用 var 而不是 let：calendar.render() 是同步的，会当场触发 datesSet → refreshEmpty，
@@ -2858,7 +2858,7 @@ function renderCloudCard(){
     off.style.display = 'block'; return;
   }
   if (!CLOUD_ONLINE){
-    $('#cloudOffTxt').textContent = '云同步请在正式地址使用：your-app.example.com（手机浏览器打开，登录后即可自动同步）';
+    $('#cloudOffTxt').textContent = '云同步未启用：需要把页面部署到 CLOUD_ENDPOINT 指向的域名（部署方式见 README）';
     off.style.display = 'block'; return;
   }
   if (cloudUser){

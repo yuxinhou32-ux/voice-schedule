@@ -6,15 +6,14 @@
 
 A voice-first scheduling app. Say *"明天下午三点半跟老张碰一下，大概一小时"* into your phone and the event is created — no opening a calendar, picking a date, dragging a time slot, typing a title.
 
-**Live app**: https://your-app.example.com/
-**User guide**: https://your-app.example.com/use.html
-**Public demo**: https://yuxinhou32-ux.github.io/voice-schedule/demo.html (no account, no backend, opens instantly)
+**Demo**: https://yuxinhou32-ux.github.io/voice-schedule/demo.html — no account, no backend, opens instantly
+**User guide**: [use.html](use.html) (served from the same site)
 
-It's a PWA: open the link in Safari, add it to your Home Screen, and it behaves like an installed app — no app store involved.
+It's a PWA: open the demo in Safari, add it to your Home Screen, and it behaves like an installed app — no app store involved.
 
-> **About the app's language**: the interface and the speech parser are both Chinese (Simplified). The demo and the live app are best understood as a working product for Chinese speakers; this README documents the engineering.
+> **About the app's language**: the interface and the speech parser are both Chinese (Simplified). This is a working product built for Chinese speakers; the README documents the engineering.
 
-> **Two builds**: the live app (first link) has cloud sync — log in and your data follows your account. The demo is a **cloud-free build**: no login, no data sent to any server, everything stays in the visitor's own browser, preloaded with fictional sample events. The demo exists so people can open it and try it immediately; the live app is the one you'd actually use day to day.
+> **What runs where**: the public link above is a **cloud-free build** — no login, nothing sent to any server, everything stays in the visitor's own browser, preloaded with fictional sample events. The full `index.html` (the one with cloud sync) is published here as source, but **its cloud config is placeholders and it is not deployed publicly**. That's deliberate: a live, open-registration deployment bills its owner for every visitor's writes, so the deployed instance of this app is private by design. Point it at your own cloud project if you want sync.
 
 ---
 
@@ -128,7 +127,7 @@ Round three finally cleaned it up: the field became plain text (numeric keypad o
 
 **Cloud sync**: backed by WorkBuddy Cloud Service (Postgres). Each record carries a millisecond timestamp for last-write-wins merging, and deletions propagate as tombstone records. List-type preferences (such as journal tags) must *not* be overwritten wholesale — a newly signed-in device only has default values locally, so overwriting would delete another device's data; they're merged as a union keyed by tag instead.
 
-> The `CLOUD_KEY` in the source is a cloud publishable key (`wbpk_` prefix). It's designed to be public: it only initializes the cloud SDK on the frontend and identifies the app, working alongside server-side row-level security (RLS) for isolation. It contains no privilege-escalating credential. The real security boundary is per-account isolation on the server, not this string.
+> **On cloud config**: the `CLOUD_ENDPOINT` / `CLOUD_KEY` in this repository are **placeholders**, not a working deployment — `sanitize.py` swaps them out before anything is committed. Worth knowing if you wire the app to your own backend: a `wbpk_`-prefixed publishable key is designed to be public (it only initializes the SDK on the frontend and identifies the app; the security boundary is per-account row-level security on the server). What should *not* be public is a link to a live deployment with open registration — every visitor's writes land on that owner's bill. That's the line I drew for this repo.
 
 **Export**: generates `.ics` for Apple Calendar, leaving scheduled reminders to iOS — the app itself never needs to run in the background.
 
@@ -139,6 +138,7 @@ Round three finally cleaned it up: the field became plain text (numeric keypad o
 ├── index.html            Main app (single file: markup + styles + logic)
 ├── demo.html             Cloud-free demo build (generated from index.html by build_demo.py)
 ├── build_demo.py         Demo build script (strips cloud SDK / version check, injects sample data)
+├── sanitize.py           Pre-publish scrub: replaces the real endpoint / key / links with placeholders
 ├── parser.js             Spoken Chinese → structured event
 ├── fullcalendar.min.js   FullCalendar (vendored)
 ├── use.html              User guide
@@ -153,7 +153,9 @@ Round three finally cleaned it up: the field became plain text (numeric keypad o
     └── demo.js           Demo build tests (zero network requests / sample data / reset)
 ```
 
-> **On `demo.html`**: it's generated from `index.html` by `build_demo.py` and **should not be hand-edited**. After each release of the main app, re-run `python build_demo.py`. The demo has zero backend dependencies — the script self-verifies that the output contains no cloud SDK URL, no production domain, no cloud key, and no `fetch` call whatsoever.
+> **On `demo.html`**: it's generated from `index.html` by `build_demo.py` and **should not be hand-edited**. After each release of the main app, re-run `python build_demo.py`. The demo has zero backend dependencies — the script self-verifies that the output contains no cloud SDK URL, no `fetch` call whatsoever, no absolute URL, and no cloud key.
+
+> **Release order** (this is what keeps the public copy safe): copy the new build in from the working app → `python sanitize.py` → `python build_demo.py` → `npm test` → commit. `sanitize.py` finishes by scanning every git-tracked file for the real domain, key, app id, and local absolute paths, and fails loudly if any of them survive.
 
 ## Running and testing locally
 
@@ -164,7 +166,7 @@ python -m http.server 8000
 # then open http://localhost:8000
 ```
 
-> Cloud login is only enabled on the production domain (there's an origin check in the code). Running locally uses local storage only.
+> Cloud login is only enabled when the page's origin equals `CLOUD_ENDPOINT` (there's an origin check in the code). Running locally, or on any other host, falls back to local storage only.
 
 Tests drive the whole page for real under jsdom, asserting against the DOM rather than unit-testing functions in isolation:
 

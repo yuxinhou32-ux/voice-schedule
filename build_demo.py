@@ -65,10 +65,10 @@ sub('插入演示条',
 
 # ---------- 4. 云常量与初始化 ----------
 # 用正则匹配「任意 endpoint + 任意 publishable key」，而不是把真实的 key 明文写进脚本，
-# 这样 build_demo.py 可以安全地开源。
+# 这样 build_demo.py 可以安全地开源。[^\n]* 允许行尾带注释（占位符那行就是带注释的）。
 sub('清空云常量',
-    r"const CLOUD_ENDPOINT = 'https://[^']+';\r?\n"
-    r"const CLOUD_KEY = 'wbpk_[A-Za-z0-9_]+';\r?\n"
+    r"const CLOUD_ENDPOINT = 'https?://[^']+';[^\n]*\r?\n"
+    r"const CLOUD_KEY = 'wbpk_[A-Za-z0-9_]+';[^\n]*\r?\n"
     r"const CLOUD_ONLINE = location\.origin === CLOUD_ENDPOINT;[^\n]*",
     "/* 演示版：不带云端同步 —— endpoint/key 清空、CLOUD_ONLINE 强制 false，\n"
     "   任何代码路径都不会发起后端请求，不消耗任何云端资源 */\n"
@@ -109,8 +109,8 @@ sub('云端卡片改演示说明',
     '      <div class="sub" style="margin:8px 0 0">你在这里的每一次操作都只保存在你自己的浏览器里，关掉页面不会影响任何人。</div>\n'
     '      <div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="demoResetBtn">重置示例数据</button></div>')
 
-sub('清掉云端卡片里的主应用域名',
-    r"'云同步请在正式地址使用：[^']+'",
+sub('清掉云端卡片里的部署域名',
+    r"'云同步未启用：[^']+'",
     "'演示版不带云端同步'", regex=True)
 
 sub('绑定重置按钮',
@@ -186,11 +186,11 @@ with open(DST, 'w', encoding='utf-8') as f:
 for x in log:
     print(x)
 
-# 校验：演示版里不应再出现任何指向主应用 / 云服务 / CDN 的地址
+# 校验：演示版里不应再出现任何外部地址、云密钥或网络调用
 bad = []
 for pat, label in [
     (r'workbuddy-cloud-sdk', '云 SDK 外链'),
-    (r'your-app\.example\.com', '主应用域名'),
+    (r'https?://', '绝对外链'),
     (r'wbpk_', '云端 publishable key'),
     (r'fetch\(', 'fetch 调用'),
 ]:
