@@ -4,7 +4,7 @@
 
 > Say a sentence. It's on your calendar.
 
-A voice-first scheduling app. Say *"明天下午三点半跟老张碰一下，大概一小时"* into your phone and the event is created — no opening a calendar, picking a date, dragging a time slot, typing a title.
+A voice-first scheduling app. Say *"明天下午三点半跟老张碰一下，大概一小时 (Meet Lao Zhang at half past three tomorrow afternoon, for about an hour.)"* into your phone and the event is created — no opening a calendar, picking a date, dragging a time slot, typing a title.
 
 **Try it**: https://yuxinhou32-ux.github.io/voice-schedule/ — no account, no backend, opens instantly
 **User guide**: [use.html](use.html) (served from the same site)
@@ -27,10 +27,10 @@ But in the moment you actually want to record something, what shows up in your h
 
 | What you want | How you do it |
 | --- | --- |
-| Create an event | Say "明天下午三点半跟老张碰一下，大概一小时" |
-| Create a to-do item | Say "记得买牛奶" — anything without a concrete time lands in the item list |
+| Create an event | Say "明天下午三点半跟老张碰一下，大概一小时 (Meet Lao Zhang at half past three tomorrow afternoon, for about an hour.)" |
+| Create a to-do item | Say "记得买牛奶 (Remember to buy milk)" — anything without a concrete time lands in the item list |
 | Any duration | Type the number directly in the confirm card, then pick minutes / hours / all-day — not limited to fixed presets |
-| Recurring events | "每周一三五晚上七点半健身" is recognized automatically, and can be edited to daily / weekly / monthly in the card |
+| Recurring events | "每周一三五晚上七点半健身 (Work out at 7:30 p.m. every Monday, Wednesday and Friday)" is recognized automatically, and can be edited to daily / weekly / monthly in the card |
 | Time anchors | Instant points like waking up or taking medication get their own toggle — rendered faint, excluded from totals |
 | Mark as important | Flip the switch and the entry renders as a full block in month view instead of a small dot |
 | Journal | Top-right of the calendar page; hold the mic and talk — a few seconds of pause won't cut you off |
@@ -46,9 +46,9 @@ Data is isolated per account: sign in with a different account on the same devic
 
 **Recognition results never go straight into storage — they land as an editable card first.** Speech recognition will get things wrong, and writing straight to the database turns mistakes into facts. So the flow is *speak → parse → card → human confirms → store*, and errors are caught before they're persisted.
 
-**Only things with a definite time become events; everything else becomes an item.** "下周三上午十点开会" and "记得买牛奶" are both "remember this" in natural language, but they differ completely in how certain the time is. Mixing them onto one calendar makes the calendar unreadable.
+**Only things with a definite time become events; everything else becomes an item.** "下周三上午十点开会(There will be a meeting at ten o'clock next Wednesday morning.)" and "记得买牛奶(Remember to buy milk)" are both "remember this" in natural language, but they differ completely in how certain the time is. Mixing them onto one calendar makes the calendar unreadable.
 
-**Recurring events are stored as rules, not expanded into instances.** "每周一三五" is one rule, not dozens of rows pushed into the calendar. Editing it means editing one thing, not dozens.
+**Recurring events are stored as rules, not expanded into instances.** "每周一三五 (Every Monday, Wednesday and Friday)" is one rule, not dozens of rows pushed into the calendar. Editing it means editing one thing, not dozens.
 
 **Empty space matters more than a full schedule.** The app's only job is to record what you explicitly decided to say. No smart scheduling, no proactively filling the table with "suggestions". An over-full calendar is itself a source of stress.
 
@@ -81,7 +81,7 @@ Simulating "open → use for a few seconds → close", ten times in a row, repro
 
 The root cause was a **race between rendering and sync**: sync is asynchronous and only started after 1.5 s, while the view had already painted from local data the instant the page opened. A fresh device has an empty container, so it painted blank. Each open/close cut sync off at a different point, so each open showed a different half-finished state.
 
-Fixed: sync now starts at 150 ms with a 20 s throttle; while sync is in flight the UI says "正在从云端同步…" instead of "今天还没有日程"; the view redraws unconditionally when sync completes; events are de-duplicated by id on startup; and static assets are versioned so a new HTML can never load alongside a stale JS.
+Fixed: sync now starts at 150 ms with a 20 s throttle; while sync is in flight the UI says "正在从云端同步…(Syncing from the cloud…)" instead of "今天还没有日程(No schedule for today)"; the view redraws unconditionally when sync completes; events are de-duplicated by id on startup; and static assets are versioned so a new HTML can never load alongside a stale JS.
 
 ### 3. Multiple copies in one day, events rendered as thin slivers, dots appearing in month view
 
@@ -121,7 +121,7 @@ Round three finally cleaned it up: the field became plain text (numeric keypad o
 
 **Frontend**: a single `app.html` with styles and logic inlined — no build step, no framework, no npm dependencies (FullCalendar is vendored locally rather than pulled from a CDN). Open it and it runs; change a line and refresh.
 
-**Speech parsing** (`parser.js`): turns spoken Chinese into a structured event — time (including relative and recurring expressions like "下周三" and "每周一三五"), title, duration, type (event / item), and a predicted tag. Recurring expressions must be parsed *before* date expressions, or "每周一" gets consumed as "this Monday".
+**Speech parsing** (`parser.js`): turns spoken Chinese into a structured event — time (including relative and recurring expressions like "下周三" and "每周一三五 (Every Monday, Wednesday and Friday)"), title, duration, type (event / item), and a predicted tag. Recurring expressions must be parsed *before* date expressions, or "每周一 (Every Monday)" gets consumed as "this Monday".
 
 **Data**: localStorage locally, with every field change pushed into a pending-sync queue.
 
